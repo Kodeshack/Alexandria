@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	blackfriday "gopkg.in/russross/blackfriday.v2"
+	blackfriday "github.com/russross/blackfriday/v2"
 
-	"./routes"
+	"tobiwiki.app/routes"
 )
 
 var ContentPrefix = "content/"

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"../models"
+	"tobiwiki.app/models"
 )
 
 func AdminRoutes(r *mux.Router) {
