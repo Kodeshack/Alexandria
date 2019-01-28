@@ -26,8 +26,17 @@ func resolveRealFilePath(path string) ([]byte, error) {
 	return output, nil
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        log.Println(r.RequestURI)
+        next.ServeHTTP(w, r)
+    })
+}
+
 func main() {
 	r := mux.NewRouter()
+
+	r.Use(loggingMiddleware)
 
 	routes.AdminRoutes(r)
 
