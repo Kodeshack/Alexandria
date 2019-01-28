@@ -6,12 +6,22 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"gopkg.in/russross/blackfriday.v2"
 )
 
 var ContentPrefix = "content/"
 
 func resolveRealFilePath(path string) ([]byte, error) {
-	return ioutil.ReadFile(ContentPrefix + path)
+	data, err := ioutil.ReadFile(ContentPrefix + path)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	options := blackfriday.WithExtensions(blackfriday.CommonExtensions | blackfriday.HardLineBreak)
+
+	output := blackfriday.Run(data, options)
+
+	return output, nil
 }
 
 func main() {
