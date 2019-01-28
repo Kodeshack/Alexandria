@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 	"tobiwiki.app/models"
 )
 
-func AdminRoutes(r *mux.Router) {
+func AdminRoutes(r *mux.Router, db *sql.DB) {
 	r.HandleFunc("/api/user", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
@@ -37,6 +38,12 @@ func AdminRoutes(r *mux.Router) {
 		}
 
 		user, err := models.NewUser(u.Email, u.DisplayName, u.Password, u.Admin)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		err = models.SaveUser(user, db)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

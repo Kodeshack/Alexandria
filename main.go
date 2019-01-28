@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	blackfriday "github.com/russross/blackfriday/v2"
 
+	"tobiwiki.app/database"
 	"tobiwiki.app/routes"
 )
 
@@ -27,18 +28,28 @@ func resolveRealFilePath(path string) ([]byte, error) {
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        log.Println(r.RequestURI)
-        next.ServeHTTP(w, r)
-    })
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println(r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func main() {
+	db, err := database.NewDBConnection("./wiki.db")
+	if err != nil {
+		panic(err)
+	}
+
+	err = database.SetupDB(db)
+	if err != nil {
+		panic(err)
+	}
+
 	r := mux.NewRouter()
 
 	r.Use(loggingMiddleware)
 
-	routes.AdminRoutes(r)
+	routes.AdminRoutes(r, db)
 
 	r.HandleFunc("/{path:[\\w\\d_/-]+}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)

@@ -2,6 +2,7 @@ package models
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -54,12 +55,12 @@ type JSONUser struct {
 }
 
 type User struct {
-	ID            int64  `json:"id"`
-	Admin         bool   `json:"admin"`
-	Email         string `json:"email"`
+	ID            int64 `json:"id"`
+	Admin         bool  `json:"admin"`
+	Email         string
 	DisplayName   string `json:"display_name"`
 	CreationDate  int64
-	Password      string `json:"password"`
+	Password      string
 	Salt          string
 	argon2KeyLen  uint32
 	argon2Memory  uint32
@@ -102,4 +103,27 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 
 func (u *User) JSON() ([]byte, error) {
 	return json.Marshal(JSONUser{u.ID, u.Admin, u.Email, u.DisplayName, u.CreationDate})
+}
+
+func SaveUser(u *User, db *sql.DB) error {
+	query := `
+		INSERT INTO users
+			(id, admin, email, display_name, creation_date, password, salt, argon2_key_len, argon2_memory, argon2_threads, argon2_time, argon2_version)
+			VALUES
+			(NULL, $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`
+
+	r, err := db.Exec(query, u.Admin, u.Email, u.DisplayName, u.CreationDate, u.Password, u.Salt, u.argon2KeyLen, u.argon2Memory, u.argon2Threads, u.argon2Time, u.argon2Version)
+	if err != nil {
+		return err
+	}
+
+	id, err := r.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	u.ID = id
+
+	return nil
 }
