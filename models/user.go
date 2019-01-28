@@ -2,6 +2,7 @@ package models
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"time"
@@ -42,6 +43,14 @@ type CreateUser struct {
 	DisplayName string `json:"display_name"`
 	Password    string `json:"password"`
 	Admin       bool   `json:"admin"`
+}
+
+type JSONUser struct {
+	ID           int64  `json:"id"`
+	Admin        bool   `json:"admin"`
+	Email        string `json:"email"`
+	DisplayName  string `json:"display_name"`
+	CreationDate int64  `json:"creation_date"`
 }
 
 type User struct {
@@ -89,4 +98,8 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 		argon2Time:    argon2Time,
 		argon2Version: argon2Version,
 	}, nil
+}
+
+func (u *User) JSON() ([]byte, error) {
+	return json.Marshal(JSONUser{u.ID, u.Admin, u.Email, u.DisplayName, u.CreationDate})
 }

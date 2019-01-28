@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -37,6 +36,11 @@ func main() {
 			return
 		}
 
+		if r.Header.Get("content-type") != "application/json" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		data, err := ioutil.ReadAll(r.Body)
 
 		if err != nil {
@@ -57,9 +61,15 @@ func main() {
 			return
 		}
 
-		fmt.Println(user)
+		resJSON, err := user.JSON()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
+		w.Write(resJSON)
 	})
 
 	r.HandleFunc("/{path:[\\w\\d_/-]+}", func(w http.ResponseWriter, r *http.Request) {
