@@ -1,6 +1,7 @@
 module tobiwiki.app
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/google/uuid v1.1.0
 	github.com/gorilla/mux v1.7.0
 	github.com/russross/blackfriday/v2 v2.0.1
