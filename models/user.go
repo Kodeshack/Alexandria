@@ -2,12 +2,17 @@ package models
 
 import (
 	"crypto/rand"
+	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"time"
 
 	"golang.org/x/crypto/argon2"
+
+	"github.com/google/uuid"
 )
 
 func randomInt(max *big.Int) (int, error) {
@@ -46,7 +51,7 @@ type CreateUser struct {
 }
 
 type JSONUser struct {
-	ID           int64  `json:"id"`
+	ID           uint32 `json:"id"`
 	Admin        bool   `json:"admin"`
 	Email        string `json:"email"`
 	DisplayName  string `json:"display_name"`
@@ -54,12 +59,12 @@ type JSONUser struct {
 }
 
 type User struct {
-	ID            int64  `json:"id"`
-	Admin         bool   `json:"admin"`
-	Email         string `json:"email"`
-	DisplayName   string `json:"display_name"`
+	ID            uint32
+	Admin         bool
+	Email         string
+	DisplayName   string
 	CreationDate  int64
-	Password      string `json:"password"`
+	Password      string
 	Salt          string
 	argon2KeyLen  uint32
 	argon2Memory  uint32
@@ -102,4 +107,76 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 
 func (u *User) JSON() ([]byte, error) {
 	return json.Marshal(JSONUser{u.ID, u.Admin, u.Email, u.DisplayName, u.CreationDate})
+}
+
+type UserStorage interface {
+	AddUser(*User) error
+	Save() error
+}
+
+type userStorage struct {
+	Version int
+	path    string
+	Users   []*User
+}
+
+func (udb *userStorage) AddUser(newUser *User) error {
+	for _, u := range udb.Users {
+		if u.Email == newUser.Email {
+			return errors.New("User Already Exists")
+		}
+	}
+
+	newUser.ID = uuid.New().ID()
+	udb.Users = append(udb.Users, newUser)
+
+	return nil
+}
+
+func (udb *userStorage) Save() error {
+	gob.Register(User{})
+	gob.Register(userStorage{})
+
+	file, err := os.OpenFile(udb.path, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	enc := gob.NewEncoder(file)
+
+	return enc.Encode(udb)
+}
+
+func LoadUserStorage(path string) (UserStorage, error) {
+	_, err := os.Stat(path)
+
+	if os.IsNotExist(err) {
+		return &userStorage{
+			Version: 1,
+			path:    path,
+			Users:   []*User{},
+		}, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	gob.Register(User{})
+	gob.Register(userStorage{})
+
+	dec := gob.NewDecoder(file)
+
+	udb := userStorage{path: path}
+	err = dec.Decode(&udb)
+	if err != nil {
+		return nil, err
+	}
+
+	return &udb, nil
 }

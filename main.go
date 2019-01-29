@@ -8,10 +8,14 @@ import (
 	"github.com/gorilla/mux"
 	blackfriday "github.com/russross/blackfriday/v2"
 
+	"tobiwiki.app/models"
 	"tobiwiki.app/routes"
 )
 
-var ContentPrefix = "content/"
+const (
+	ContentPrefix   = "content/"
+	UserStoragePath = "users.db"
+)
 
 func resolveRealFilePath(path string) ([]byte, error) {
 	data, err := ioutil.ReadFile(ContentPrefix + path)
@@ -34,11 +38,16 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	userStorage, err := models.LoadUserStorage(UserStoragePath)
+	if err != nil {
+		panic(err)
+	}
+
 	r := mux.NewRouter()
 
 	r.Use(loggingMiddleware)
 
-	routes.AdminRoutes(r)
+	routes.AdminRoutes(r, userStorage)
 
 	r.HandleFunc("/{path:[\\w\\d_/-]+}", func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
