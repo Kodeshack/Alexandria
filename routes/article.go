@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"tobiwiki.app/models"
+	"alexandria.app/models"
 
 	"github.com/gorilla/mux"
 )

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"tobiwiki.app/models"
+	"alexandria.app/models"
 )
 
 func AdminRoutes(r *mux.Router, userStorage models.UserStorage) {

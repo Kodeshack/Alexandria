@@ -6,8 +6,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"tobiwiki.app/models"
-	"tobiwiki.app/routes"
+	"alexandria.app/models"
+	"alexandria.app/routes"
 )
 
 const (
