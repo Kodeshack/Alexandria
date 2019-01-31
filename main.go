@@ -13,6 +13,7 @@ import (
 const (
 	ContentPrefix   = "content"
 	UserStoragePath = "users.db"
+	TemplateDir     = "view/templates"
 )
 
 func loggingMiddleware(next http.Handler) http.Handler {
@@ -35,6 +36,8 @@ func main() {
 	routes.AdminRoutes(r, userStorage)
 
 	routes.ArticleRoutes(r, ContentPrefix)
+
+	routes.IndexRoutes(r, TemplateDir)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
