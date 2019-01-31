@@ -1,47 +1,20 @@
 package models
 
 import (
-	"crypto/rand"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"os"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/argon2"
 
 	"github.com/google/uuid"
+
+	"alexandria.app/crypto"
 )
-
-func randomInt(max *big.Int) (int, error) {
-	rand, err := rand.Int(rand.Reader, max)
-	if err != nil {
-		return 0, err
-	}
-
-	return int(rand.Int64()), nil
-}
-
-// GetRandomString generate random string by specify chars.
-func getRandomString(n int) (string, error) {
-	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-
-	buffer := make([]byte, n)
-	max := big.NewInt(int64(len(alphanum)))
-
-	for i := 0; i < n; i++ {
-		index, err := randomInt(max)
-		if err != nil {
-			return "", err
-		}
-
-		buffer[i] = alphanum[index]
-	}
-
-	return string(buffer), nil
-}
 
 type CreateUser struct {
 	Email       string `json:"email"`
@@ -66,11 +39,11 @@ type User struct {
 	CreationDate  int64
 	Password      string
 	Salt          string
-	argon2KeyLen  uint32
-	argon2Memory  uint32
-	argon2Threads uint8
-	argon2Time    uint32
-	argon2Version int
+	Argon2KeyLen  uint32
+	Argon2Memory  uint32
+	Argon2Threads uint8
+	Argon2Time    uint32
+	Argon2Version int
 }
 
 // Following https://tools.ietf.org/html/draft-irtf-cfrg-argon2-03#section-4
@@ -83,7 +56,7 @@ var (
 )
 
 func NewUser(email, displayName, password string, admin bool) (*User, error) {
-	salt, err := getRandomString(16)
+	salt, err := crypto.GetRandomString(16)
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +70,11 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 		Password:      fmt.Sprintf("%x", tempPasswd),
 		Salt:          salt,
 		CreationDate:  time.Now().Unix(),
-		argon2KeyLen:  argon2KeyLen,
-		argon2Memory:  argon2Memory,
-		argon2Threads: argon2Threads,
-		argon2Time:    argon2Time,
-		argon2Version: argon2Version,
+		Argon2KeyLen:  argon2KeyLen,
+		Argon2Memory:  argon2Memory,
+		Argon2Threads: argon2Threads,
+		Argon2Time:    argon2Time,
+		Argon2Version: argon2Version,
 	}, nil
 }
 
@@ -112,6 +85,7 @@ func (u *User) JSON() ([]byte, error) {
 type UserStorage interface {
 	AddUser(*User) error
 	Save() error
+	CheckUserLogin(email, password string) *User
 }
 
 type userStorage struct {
@@ -120,17 +94,40 @@ type userStorage struct {
 	Users   []*User
 }
 
-func (udb *userStorage) AddUser(newUser *User) error {
+func (udb *userStorage) GetUser(email string) *User {
 	for _, u := range udb.Users {
-		if u.Email == newUser.Email {
-			return errors.New("User Already Exists")
+		if strings.EqualFold(u.Email, email) {
+			return u
 		}
+	}
+
+	return nil
+}
+
+func (udb *userStorage) AddUser(newUser *User) error {
+	if udb.GetUser(newUser.Email) != nil {
+		return errors.New("User Already Exists")
 	}
 
 	newUser.ID = uuid.New().ID()
 	udb.Users = append(udb.Users, newUser)
 
 	return nil
+}
+
+func (udb *userStorage) CheckUserLogin(email, password string) *User {
+	user := udb.GetUser(email)
+	if user == nil {
+		return nil
+	}
+
+	tempPasswd := argon2.IDKey([]byte(password), []byte(user.Salt), user.Argon2Time, user.Argon2Memory, user.Argon2Threads, user.Argon2KeyLen)
+
+	if user.Password != fmt.Sprintf("%x", tempPasswd) {
+		return nil
+	}
+
+	return user
 }
 
 func (udb *userStorage) Save() error {

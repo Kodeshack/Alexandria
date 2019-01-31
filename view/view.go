@@ -27,5 +27,6 @@ func New(layout, template, dir string, data interface{}) *View {
 		layout:   layout,
 		template: template,
 		dir:      dir,
+		data:     data,
 	}
 }

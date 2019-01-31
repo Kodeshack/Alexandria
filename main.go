@@ -29,11 +29,15 @@ func main() {
 		panic(err)
 	}
 
+	sessionStorage := models.NewSessionStorage()
+
 	r := mux.NewRouter()
 
 	r.Use(loggingMiddleware)
 
-	routes.AdminRoutes(r, userStorage)
+	r.Use(routes.AuthMiddleWare(sessionStorage))
+
+	routes.AdminRoutes(r, TemplateDir, userStorage, sessionStorage)
 
 	routes.ArticleRoutes(r, ContentPrefix)
 
