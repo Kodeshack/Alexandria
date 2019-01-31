@@ -11,6 +11,11 @@ import (
 
 func ArticleRoutes(r *mux.Router, contentPath string) {
 	r.HandleFunc("/{path:[\\w\\d_/-]+}", func(w http.ResponseWriter, r *http.Request) {
+		if models.GetRequestSession(r) == nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
+
 		vars := mux.Vars(r)
 		path := vars["path"]
 		if len(path) == 0 {

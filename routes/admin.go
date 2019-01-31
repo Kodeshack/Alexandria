@@ -13,7 +13,14 @@ import (
 )
 
 func AdminRoutes(r *mux.Router, templateDir string, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
-	r.HandleFunc("/api/user", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) {
+		session := models.GetRequestSession(r)
+
+		if (session == nil || !session.User.Admin) && !userStorage.IsEmpty() {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return

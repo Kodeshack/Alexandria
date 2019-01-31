@@ -86,6 +86,7 @@ type UserStorage interface {
 	AddUser(*User) error
 	Save() error
 	CheckUserLogin(email, password string) *User
+	IsEmpty() bool
 }
 
 type userStorage struct {
@@ -143,6 +144,10 @@ func (udb *userStorage) Save() error {
 	enc := gob.NewEncoder(file)
 
 	return enc.Encode(udb)
+}
+
+func (udb *userStorage) IsEmpty() bool {
+	return len(udb.Users) == 0
 }
 
 func LoadUserStorage(path string) (UserStorage, error) {
