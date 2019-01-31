@@ -6,6 +6,9 @@ fmt:
 test:
 	go test -cover -race -v ./...
 
+release:
+	go build -ldflags="-w -s" -o alexandria main.go
+
 build:
 	go build ./...
 
