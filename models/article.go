@@ -51,7 +51,7 @@ func (a *Article) Read() error {
 }
 
 func (a *Article) ContentHTML() ([]byte, error) {
-	options := blackfriday.WithExtensions(blackfriday.CommonExtensions | blackfriday.HardLineBreak)
+	options := blackfriday.WithExtensions(blackfriday.CommonExtensions)
 
 	output := blackfriday.Run(a.Content, options)
 
