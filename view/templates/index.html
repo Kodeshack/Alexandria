@@ -5,6 +5,13 @@
 
 {{if .Data.User}}
     <h3>Hello, {{ .Data.User.DisplayName }}</h3>
+
+    <ul>
+        {{ range .Data.Category.Entries -}}
+        <li><a href="{{ $.Config.BaseURL }}{{ . }}">{{ . }}</a></li>
+        {{ end }}
+    </ul>
+
     <a href="/article/new">New Article</a>
     <br />
     <a href="/logout">Logout</a>

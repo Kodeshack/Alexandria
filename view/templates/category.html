@@ -1,0 +1,10 @@
+{{define "content"}}
+
+<ul>
+    <li><a href="{{ $.Config.BaseURL }}{{ .Data.Parent }}">..</a></li>
+    {{ range .Data.Entries }}
+    <li><a href="{{ $.Config.BaseURL }}{{ $.Data.Name }}/{{ . }}">{{ . }}</a></li>
+    {{ end }}
+</ul>
+
+{{end}}

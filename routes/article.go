@@ -3,6 +3,7 @@ package routes
 import (
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -72,20 +73,39 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
-		article, err := models.LoadArticle(filepath.Join(config.ContentPath, path+".md"))
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
+		realPath := filepath.Join(config.ContentPath, path)
 
-		data, err := article.ContentHTML()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		stat, _ := os.Stat(realPath)
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		w.Write(data)
+		if stat != nil && stat.IsDir() {
+			category := models.NewCategory(path, realPath)
+			if err := category.ScanEntries(); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			v := view.New("layout", "category", config, category)
+			if err := v.Render(w); err != nil {
+				log.Print(err)
+				return
+			}
+		} else {
+			article, err := models.LoadArticle(realPath + ".md")
+			if err != nil {
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+
+			data, err := article.ContentHTML()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "text/html; charset=utf-8")
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+		}
 	})
 }

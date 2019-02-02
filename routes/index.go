@@ -13,13 +13,22 @@ import (
 func IndexRoutes(r *mux.Router, config *models.Config) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		type viewData struct {
-			User *models.User
+			User     *models.User
+			Category *models.Category
 		}
 
 		data := viewData{}
 
 		if session := models.GetRequestSession(r); session != nil {
 			data.User = session.User
+		}
+
+		if category := models.NewCategory("", config.ContentPath); category != nil {
+			if err := category.ScanEntries(); err != nil {
+				log.Printf("Error while reading root categroy %v", err)
+			} else {
+				data.Category = category
+			}
 		}
 
 		v := view.New("layout", "index", config, data)
