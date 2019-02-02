@@ -23,7 +23,7 @@ func ArticleRoutes(r *mux.Router, contentPath string) {
 			return
 		}
 
-		article, err := models.NewArticle(filepath.Join(contentPath, path+".md"))
+		article, err := models.LoadArticle(filepath.Join(contentPath, path+".md"))
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return

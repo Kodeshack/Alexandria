@@ -42,7 +42,7 @@ This is just some test text
 		t.Error(err)
 	}
 
-	article, err = NewArticle(path)
+	article, err = LoadArticle(path)
 	if err != nil {
 		t.Error(err)
 	}

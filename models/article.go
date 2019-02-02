@@ -82,7 +82,7 @@ func (a *Article) Write() error {
 	return file.Close()
 }
 
-func NewArticle(path string) (*Article, error) {
+func LoadArticle(path string) (*Article, error) {
 	_, err := os.Stat(path)
 	if err != nil {
 		return nil, err
