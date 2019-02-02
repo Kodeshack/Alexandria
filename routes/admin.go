@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/mail"
 
 	"github.com/gorilla/mux"
 
@@ -45,6 +46,13 @@ func AdminRoutes(r *mux.Router, templateDir string, userStorage models.UserStora
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write(NewErrorJSON(http.StatusBadRequest, "Invalid JSON"))
+			return
+		}
+
+		_, err = mail.ParseAddress(u.Email)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(NewErrorJSON(http.StatusBadRequest, "Bad email address"))
 			return
 		}
 
