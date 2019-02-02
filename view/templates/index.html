@@ -5,6 +5,8 @@
 
 {{if .User}}
     <h3>Hello, {{ .User.DisplayName }}</h3>
+    <a href="/article/new">New Article</a>
+    <br />
     <a href="/logout">Logout</a>
 {{else}}
     <a href="/login">Login</a>

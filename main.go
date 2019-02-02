@@ -39,7 +39,7 @@ func main() {
 
 	routes.AdminRoutes(r, TemplateDir, userStorage, sessionStorage)
 
-	routes.ArticleRoutes(r, ContentPrefix)
+	routes.ArticleRoutes(r, ContentPrefix, TemplateDir)
 
 	routes.IndexRoutes(r, TemplateDir)
 

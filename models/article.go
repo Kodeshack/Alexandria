@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"time"
 
 	blackfriday "github.com/russross/blackfriday/v2"
 
@@ -57,6 +59,11 @@ func (a *Article) ContentHTML() ([]byte, error) {
 }
 
 func (a *Article) Write() error {
+	err := os.MkdirAll(filepath.Dir(a.Path), os.ModePerm)
+	if err != nil {
+		return err
+	}
+
 	file, err := os.OpenFile(a.Path, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
@@ -99,4 +106,16 @@ func LoadArticle(path string) (*Article, error) {
 	}
 
 	return &a, nil
+}
+
+func NewArticle(title, content, dir string) *Article {
+	return &Article{
+		Path:    filepath.Join(dir, title+".md"),
+		Content: []byte(content),
+		parsed:  true,
+		Meta: Metadata{
+			Title:        title,
+			LastEditedAt: time.Now().Unix(),
+		},
+	}
 }
