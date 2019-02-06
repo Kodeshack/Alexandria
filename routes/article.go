@@ -12,14 +12,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func ArticleRoutes(r *mux.Router, contentPath string, templateDir string) {
+func ArticleRoutes(r *mux.Router, config *models.Config) {
 	r.HandleFunc("/article/new", func(w http.ResponseWriter, r *http.Request) {
 		if models.GetRequestSession(r) == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
-		v := view.New("layout", "editor", templateDir, nil)
+		v := view.New("layout", "editor", config.TemplateDirectory, nil)
 
 		if err := v.Render(w); err != nil {
 			log.Print(err)
@@ -45,7 +45,7 @@ func ArticleRoutes(r *mux.Router, contentPath string, templateDir string) {
 		// to remove the offending `\r`s.
 		content := strings.Replace(r.FormValue("content"), "\r", "", -1)
 
-		dir := filepath.Join(contentPath, filepath.Dir(title))
+		dir := filepath.Join(config.ContentPath, filepath.Dir(title))
 		fileName := filepath.Base(title)
 
 		article := models.NewArticle(fileName, content, dir)
@@ -72,7 +72,7 @@ func ArticleRoutes(r *mux.Router, contentPath string, templateDir string) {
 			return
 		}
 
-		article, err := models.LoadArticle(filepath.Join(contentPath, path+".md"))
+		article, err := models.LoadArticle(filepath.Join(config.ContentPath, path+".md"))
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			return

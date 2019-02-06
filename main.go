@@ -10,12 +10,6 @@ import (
 	"alexandria.app/routes"
 )
 
-const (
-	ContentPrefix   = "content"
-	UserStoragePath = "users.db"
-	TemplateDir     = "view/templates"
-)
-
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Println(r.RequestURI)
@@ -24,7 +18,9 @@ func loggingMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
-	userStorage, err := models.LoadUserStorage(UserStoragePath)
+	config := models.NewConfig()
+
+	userStorage, err := models.LoadUserStorage(config.UserStoragePath)
 	if err != nil {
 		panic(err)
 	}
@@ -37,11 +33,11 @@ func main() {
 
 	r.Use(routes.AuthMiddleWare(sessionStorage))
 
-	routes.AdminRoutes(r, TemplateDir, userStorage, sessionStorage)
+	routes.AdminRoutes(r, config, userStorage, sessionStorage)
 
-	routes.ArticleRoutes(r, ContentPrefix, TemplateDir)
+	routes.ArticleRoutes(r, config)
 
-	routes.IndexRoutes(r, TemplateDir)
+	routes.IndexRoutes(r, config)
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(config.Host+config.Port, r))
 }

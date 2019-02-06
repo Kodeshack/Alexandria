@@ -10,7 +10,7 @@ import (
 	"alexandria.app/view"
 )
 
-func IndexRoutes(r *mux.Router, templateDir string) {
+func IndexRoutes(r *mux.Router, config *models.Config) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		type viewData struct {
 			User *models.User
@@ -22,7 +22,7 @@ func IndexRoutes(r *mux.Router, templateDir string) {
 			data.User = session.User
 		}
 
-		v := view.New("layout", "index", templateDir, data)
+		v := view.New("layout", "index", config.TemplateDirectory, data)
 
 		if err := v.Render(w); err != nil {
 			log.Print(err)
