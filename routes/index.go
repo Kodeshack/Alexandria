@@ -22,7 +22,7 @@ func IndexRoutes(r *mux.Router, config *models.Config) {
 			data.User = session.User
 		}
 
-		v := view.New("layout", "index", config.TemplateDirectory, data)
+		v := view.New("layout", "index", config, data)
 
 		if err := v.Render(w); err != nil {
 			log.Print(err)

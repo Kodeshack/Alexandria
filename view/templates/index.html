@@ -3,8 +3,8 @@
 <h1>Alexandria</h1>
 <h2>The minimalist wiki written in Go</h2>
 
-{{if .User}}
-    <h3>Hello, {{ .User.DisplayName }}</h3>
+{{if .Data.User}}
+    <h3>Hello, {{ .Data.User.DisplayName }}</h3>
     <a href="/article/new">New Article</a>
     <br />
     <a href="/logout">Logout</a>

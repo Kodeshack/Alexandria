@@ -19,7 +19,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
-		v := view.New("layout", "editor", config.TemplateDirectory, nil)
+		v := view.New("layout", "editor", config, nil)
 
 		if err := v.Render(w); err != nil {
 			log.Print(err)

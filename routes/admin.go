@@ -91,7 +91,7 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			v := view.New("layout", "login", config.TemplateDirectory, nil)
+			v := view.New("layout", "login", config, nil)
 
 			if err := v.Render(w); err != nil {
 				log.Print(err)
@@ -111,7 +111,7 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if len(email) == 0 || len(password) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			v := view.New("layout", "login", config.TemplateDirectory, nil)
+			v := view.New("layout", "login", config, nil)
 
 			if err := v.Render(w); err != nil {
 				log.Print(err)
@@ -124,7 +124,7 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		user := userStorage.CheckUserLogin(email, password)
 		if user == nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			v := view.New("layout", "login", config.TemplateDirectory, nil)
+			v := view.New("layout", "login", config, nil)
 
 			if err := v.Render(w); err != nil {
 				log.Print(err)
