@@ -29,4 +29,11 @@ func IndexRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 	}).Methods("GET")
+
+	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		content := []byte("User-agent: *\nDisallow: /")
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(content)
+	}).Methods("GET")
 }
