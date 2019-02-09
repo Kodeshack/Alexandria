@@ -1,0 +1,26 @@
+{{define "content"}}
+<h1>Account</h1>
+
+<form method="post" action="/user/update">
+    <label for="email">Email</label>
+    <input name="email" type="email" value="{{ .Data.Email }}" />
+
+    <label for="display_name">Display name</label>
+    <input name="display_name" value="{{ .Data.DisplayName }}" />
+
+    <input type="submit" value="Update profile" />
+</form>
+
+<form method="post" action="/user/password">
+    <label for="old_password">Old password</label>
+    <input name="old_password" type="password" />
+
+    <label for="new_password">New password</label>
+    <input name="new_password" type="password" />
+
+    <label for="confirm_new_password">Confirm new password</label>
+    <input name="confirm_new_password" type="password" />
+
+    <input type="submit" value="Update password" />
+</form>
+{{end}}

@@ -34,6 +34,7 @@ func main() {
 	r.Use(routes.AuthMiddleWare(sessionStorage))
 
 	routes.AdminRoutes(r, config, userStorage, sessionStorage)
+	routes.UserRoutes(r, config, userStorage, sessionStorage)
 
 	routes.ArticleRoutes(r, config)
 

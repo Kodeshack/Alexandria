@@ -86,6 +86,8 @@ type UserStorage interface {
 	AddUser(*User) error
 	Save() error
 	CheckUserLogin(email, password string) *User
+	CheckUserPassword(user *User, password string) *User
+	SetUserPassword(user *User, newPassword string) error
 	IsEmpty() bool
 }
 
@@ -118,6 +120,10 @@ func (udb *userStorage) AddUser(newUser *User) error {
 
 func (udb *userStorage) CheckUserLogin(email, password string) *User {
 	user := udb.GetUser(email)
+	return udb.CheckUserPassword(user, password)
+}
+
+func (udb *userStorage) CheckUserPassword(user *User, password string) *User {
 	if user == nil {
 		return nil
 	}
@@ -129,6 +135,25 @@ func (udb *userStorage) CheckUserLogin(email, password string) *User {
 	}
 
 	return user
+}
+
+func (udb *userStorage) SetUserPassword(user *User, newPassword string) error {
+	salt, err := crypto.GetRandomString(16)
+	if err != nil {
+		return err
+	}
+
+	tempPasswd := argon2.IDKey([]byte(newPassword), []byte(salt), argon2Time, argon2Memory, argon2Threads, argon2KeyLen)
+
+	user.Password = fmt.Sprintf("%x", tempPasswd)
+	user.Salt = salt
+	user.Argon2KeyLen = argon2KeyLen
+	user.Argon2Memory = argon2Memory
+	user.Argon2Threads = argon2Threads
+	user.Argon2Time = argon2Time
+	user.Argon2Version = argon2Version
+
+	return nil
 }
 
 func (udb *userStorage) Save() error {
