@@ -4,7 +4,7 @@
     <input name="title" type="text" />
 
     <br />
-    <textarea name="content">{{ if .Content }}{{ .Content }}{{ end }}</textarea>
+    <textarea name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
 
     <br />
     <input type="submit" value="Save" />
