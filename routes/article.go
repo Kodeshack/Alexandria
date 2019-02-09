@@ -84,6 +84,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		w.Write(data)
 	})
