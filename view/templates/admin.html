@@ -1,0 +1,32 @@
+{{define "content"}}
+
+<h1>Admin</h1>
+
+<p><a href="/user/new">Create new user</a></p>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Display name</th>
+        <th>Admin</th>
+        <th>Date created</th>
+        <th>Delete</th>
+    </tr>
+    {{ range .Data -}}
+    <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Email}}</td>
+        <td>{{.DisplayName}}</td>
+        <td>{{.Admin}}</td>
+        <td>{{.CreationDate}}</td>
+        <td>
+            <form action="/user/delete" method="post">
+                <input name="id" type="hidden" value="{{.ID}}" />
+                <input type="submit" value="X" />
+            </form>
+        </td>
+    </tr>
+    {{ end }}
+</table>
+{{end}}

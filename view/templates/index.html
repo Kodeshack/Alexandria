@@ -16,6 +16,10 @@
     <br />
     <a href="/user">Account</a>
     <br />
+    {{if .Data.User.Admin}}
+    <a href="/admin">Admin</a>
+    <br />
+    {{end}}
     <a href="/logout">Logout</a>
 {{else}}
     <a href="/login">Login</a>

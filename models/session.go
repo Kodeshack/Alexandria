@@ -24,6 +24,7 @@ func (s *Session) Cookie(isHTTPS bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     SessionCookieName,
 		Value:    s.sessionID,
+		Path:     "/",
 		SameSite: http.SameSiteStrictMode,
 		Secure:   isHTTPS,
 		HttpOnly: true,
@@ -57,6 +58,14 @@ func (sstrg *SessionStorage) RemoveSession(sess *Session) {
 		}
 	}
 
+}
+
+func (sstrg *SessionStorage) RemoveSessionsForUser(id uint32) {
+	for i, s := range sstrg.sessions {
+		if s.User.ID == id {
+			sstrg.sessions = append(sstrg.sessions[:i], sstrg.sessions[i+1:]...)
+		}
+	}
 }
 
 func (sstrg *SessionStorage) GetSession(token string) *Session {

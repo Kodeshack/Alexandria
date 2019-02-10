@@ -83,7 +83,9 @@ func (u *User) JSON() ([]byte, error) {
 }
 
 type UserStorage interface {
+	GetUsers() []*User
 	AddUser(*User) error
+	DeleteUser(id uint32)
 	Save() error
 	CheckUserLogin(email, password string) *User
 	CheckUserPassword(user *User, password string) *User
@@ -95,6 +97,10 @@ type userStorage struct {
 	Version int
 	path    string
 	Users   []*User
+}
+
+func (udb *userStorage) GetUsers() []*User {
+	return udb.Users
 }
 
 func (udb *userStorage) GetUser(email string) *User {
@@ -116,6 +122,15 @@ func (udb *userStorage) AddUser(newUser *User) error {
 	udb.Users = append(udb.Users, newUser)
 
 	return nil
+}
+
+func (udb *userStorage) DeleteUser(id uint32) {
+	for i, u := range udb.Users {
+		if u.ID == id {
+			udb.Users = append(udb.Users[:i], udb.Users[i+1:]...)
+			return
+		}
+	}
 }
 
 func (udb *userStorage) CheckUserLogin(email, password string) *User {

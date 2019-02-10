@@ -1,0 +1,23 @@
+
+{{define "content"}}
+<h1>Create User</h1>
+
+<form method="post" action="/user/new">
+    <label for="email">Email</label>
+    <input name="email" type="email" />
+    <br />
+    <label for="display_name">Display name</label>
+    <input name="display_name" />
+    <br />
+    <label for="admin">Admin</label>
+    <input name="admin" type="checkbox" />
+    <br />
+    <label for="password">Password</label>
+    <input name="password" type="password" />
+    <br />
+    <label for="confirm_password">Confirm password</label>
+    <input name="confirm_password" type="password" />
+    <br />
+    <input type="submit" value="Create user" />
+</form>
+{{end}}

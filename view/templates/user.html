@@ -23,4 +23,9 @@
 
     <input type="submit" value="Update password" />
 </form>
+
+<form action="/user/delete" method="post">
+    <input name="id" type="hidden" value="{{.Data.ID}}" />
+    <input type="submit" value="Delete account" />
+</form>
 {{end}}
