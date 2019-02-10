@@ -38,7 +38,7 @@ func main() {
 
 	routes.ArticleRoutes(r, config)
 
-	routes.IndexRoutes(r, config)
+	routes.IndexRoutes(r, config, userStorage)
 
 	log.Fatal(http.ListenAndServe(config.Host+config.Port, r))
 }

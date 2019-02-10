@@ -10,7 +10,7 @@ import (
 	"alexandria.app/view"
 )
 
-func IndexRoutes(r *mux.Router, config *models.Config) {
+func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		type viewData struct {
 			User     *models.User
@@ -29,6 +29,11 @@ func IndexRoutes(r *mux.Router, config *models.Config) {
 			} else {
 				data.Category = category
 			}
+		}
+
+		if userStorage.IsEmpty() {
+			http.Redirect(w, r, "/user/new", http.StatusFound)
+			return
 		}
 
 		v := view.New("layout", "index", config, data)
