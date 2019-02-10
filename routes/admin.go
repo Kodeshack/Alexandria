@@ -1,11 +1,8 @@
 package routes
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"net/mail"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -15,84 +12,6 @@ import (
 )
 
 func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
-	r.HandleFunc("/user/create", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
-
-		if (session == nil || !session.User.Admin) && !userStorage.IsEmpty() {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-
-		if r.Header.Get("content-type") != "application/json" {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(NewErrorJSON(http.StatusBadRequest, `Content-Type must be "application/json"`))
-			return
-		}
-
-		data, err := ioutil.ReadAll(r.Body)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(NewErrorJSON(http.StatusBadRequest, "Error while reading request body"))
-			return
-		}
-
-		u := models.CreateUser{}
-		err = json.Unmarshal(data, &u)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(NewErrorJSON(http.StatusBadRequest, "Invalid JSON"))
-			return
-		}
-
-		email, err := mail.ParseAddress(u.Email)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(NewErrorJSON(http.StatusBadRequest, "Bad email address"))
-			return
-		}
-
-		u.Email = email.Address
-		u.DisplayName = strings.TrimSpace(u.DisplayName)
-
-		user, err := models.NewUser(u.Email, u.DisplayName, u.Password, u.Admin)
-		if err != nil {
-			log.Fatal(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		err = userStorage.AddUser(user)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(NewErrorJSON(http.StatusBadRequest, "User already exists"))
-			return
-		}
-
-		err = userStorage.Save()
-		if err != nil {
-			log.Fatal(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		resJSON, err := user.JSON()
-		if err != nil {
-			log.Fatal(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		w.Write(resJSON)
-	})
-
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			v := view.New("layout", "login", config, nil)
