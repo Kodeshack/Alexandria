@@ -39,12 +39,13 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
-		title := r.FormValue("title")
+		title := strings.TrimSpace(r.FormValue("title"))
+		content := strings.TrimSpace(r.FormValue("content"))
 
 		// For some reason when the browser POSTs data from the <textarea> it inserts `\r` before every
 		// `\n` character. Because the markdown spec defines newlines as `\n` only, we need
 		// to remove the offending `\r`s.
-		content := strings.Replace(r.FormValue("content"), "\r", "", -1)
+		content = strings.Replace(content, "\r", "", -1)
 
 		dir := filepath.Join(config.ContentPath, filepath.Dir(title))
 		fileName := filepath.Base(title)

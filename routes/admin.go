@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -49,12 +50,15 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 			return
 		}
 
-		_, err = mail.ParseAddress(u.Email)
+		email, err := mail.ParseAddress(u.Email)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write(NewErrorJSON(http.StatusBadRequest, "Bad email address"))
 			return
 		}
+
+		u.Email = email.Address
+		u.DisplayName = strings.TrimSpace(u.DisplayName)
 
 		user, err := models.NewUser(u.Email, u.DisplayName, u.Password, u.Admin)
 		if err != nil {
@@ -106,7 +110,7 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 			return
 		}
 
-		email := r.FormValue("email")
+		email := strings.TrimSpace(r.FormValue("email"))
 		password := r.FormValue("password")
 
 		if len(email) == 0 || len(password) == 0 {

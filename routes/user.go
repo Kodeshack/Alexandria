@@ -38,7 +38,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 			return
 		}
 
-		email := strings.TrimSpace(r.FormValue("email"))
+		email := r.FormValue("email")
 		displayName := strings.TrimSpace(r.FormValue("display_name"))
 
 		if len(email) == 0 || len(displayName) == 0 {
@@ -46,13 +46,13 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 			return
 		}
 
-		_, err := mail.ParseAddress(email)
+		parsedEmail, err := mail.ParseAddress(email)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		user.Email = email
+		user.Email = parsedEmail.Address
 		user.DisplayName = displayName
 
 		if err = userStorage.Save(); err != nil {
