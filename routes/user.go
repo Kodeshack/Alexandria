@@ -100,7 +100,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		err = userStorage.AddUser(user)
 		if err != nil {
-			// User already exists.
+			// User already exists or, very unlikely, a UUID collision.
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}

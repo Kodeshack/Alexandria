@@ -113,14 +113,28 @@ func (udb *userStorage) GetUser(email string) *User {
 	return nil
 }
 
+func (udb *userStorage) GetUserByID(id uint32) *User {
+	for _, u := range udb.Users {
+		if u.ID == id {
+			return u
+		}
+	}
+
+	return nil
+}
+
 func (udb *userStorage) AddUser(newUser *User) error {
 	if udb.GetUser(newUser.Email) != nil {
 		return errors.New("User Already Exists")
 	}
 
-	newUser.ID = uuid.New().ID()
-	udb.Users = append(udb.Users, newUser)
+	id := uuid.New().ID()
+	if udb.GetUserByID(id) != nil {
+		return errors.New("UUID Collision")
+	}
 
+	newUser.ID = id
+	udb.Users = append(udb.Users, newUser)
 	return nil
 }
 
