@@ -40,14 +40,15 @@ func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if err := v.Render(w); err != nil {
 			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-	}).Methods("GET")
+	}).Methods(http.MethodGet)
 
 	r.HandleFunc("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		content := []byte("User-agent: *\nDisallow: /")
 
 		w.WriteHeader(http.StatusOK)
 		w.Write(content)
-	}).Methods("GET")
+	}).Methods(http.MethodGet)
 }

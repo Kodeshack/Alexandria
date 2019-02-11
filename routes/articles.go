@@ -14,28 +14,27 @@ import (
 )
 
 func ArticleRoutes(r *mux.Router, config *models.Config) {
-	r.HandleFunc("/article/new", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/articles/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/", http.StatusFound)
+	}).Methods(http.MethodGet)
+
+	r.HandleFunc("/articles/new", func(w http.ResponseWriter, r *http.Request) {
 		if models.GetRequestSession(r) == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
 		v := view.New("layout", "editor", config, nil)
-
 		if err := v.Render(w); err != nil {
 			log.Print(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-	})
+	}).Methods(http.MethodGet)
 
-	r.HandleFunc("/article/save", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/articles/save", func(w http.ResponseWriter, r *http.Request) {
 		if models.GetRequestSession(r) == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 
@@ -58,10 +57,10 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
-		http.Redirect(w, r, "/"+title, http.StatusFound)
-	})
+		http.Redirect(w, r, "/articles/"+title, http.StatusFound)
+	}).Methods(http.MethodPost)
 
-	r.HandleFunc("/{path:[\\w\\d_/-]+}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc(`/articles/{path:[\w\d_/-]+}`, func(w http.ResponseWriter, r *http.Request) {
 		if models.GetRequestSession(r) == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
@@ -89,6 +88,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			v := view.New("layout", "category", config, category)
 			if err := v.Render(w); err != nil {
 				log.Print(err)
+				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 		} else {
@@ -108,5 +108,5 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			w.WriteHeader(http.StatusOK)
 			w.Write(data)
 		}
-	})
+	}).Methods(http.MethodGet)
 }

@@ -1,9 +1,9 @@
 {{define "content"}}
 
 <ul>
-    <li><a href="{{ $.Config.BaseURL }}{{ .Data.Parent }}">..</a></li>
+    <li><a href="{{ $.Config.BaseURL }}articles/{{ .Data.Parent }}">..</a></li>
     {{ range .Data.Entries }}
-    <li><a href="{{ $.Config.BaseURL }}{{ $.Data.Name }}/{{ . }}">{{ . }}</a></li>
+    <li><a href="{{ $.Config.BaseURL }}articles/{{ $.Data.Name }}/{{ . }}">{{ . }}</a></li>
     {{ end }}
 </ul>
 

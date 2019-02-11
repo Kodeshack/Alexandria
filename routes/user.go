@@ -214,12 +214,12 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 			return
 		}
 
-		id_t, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
+		idt, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		id := uint32(id_t)
+		id := uint32(idt)
 
 		if id != user.ID && !user.Admin {
 			w.WriteHeader(http.StatusForbidden)

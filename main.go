@@ -33,12 +33,18 @@ func main() {
 
 	r.Use(routes.AuthMiddleWare(sessionStorage))
 
-	routes.AdminRoutes(r, config, userStorage, sessionStorage)
+	routes.IndexRoutes(r, config, userStorage)
+
+	// Session-related routes.
+	routes.LoginRoutes(r, config, userStorage, sessionStorage)
+	routes.LogoutRoutes(r, sessionStorage)
+
+	// User-related routes.
+	routes.AdminRoutes(r, config, userStorage)
 	routes.UserRoutes(r, config, userStorage, sessionStorage)
 
+	// Content-related routes.
 	routes.ArticleRoutes(r, config)
-
-	routes.IndexRoutes(r, config, userStorage)
 
 	log.Fatal(http.ListenAndServe(config.Host+config.Port, r))
 }

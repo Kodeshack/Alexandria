@@ -8,11 +8,11 @@
 
     <ul>
         {{ range .Data.Category.Entries -}}
-        <li><a href="{{ $.Config.BaseURL }}{{ . }}">{{ . }}</a></li>
+        <li><a href="{{ $.Config.BaseURL }}articles/{{ . }}">{{ . }}</a></li>
         {{ end }}
     </ul>
 
-    <a href="/article/new">New Article</a>
+    <a href="/articles/new">New Article</a>
     <br />
     <a href="/user">Account</a>
     <br />
