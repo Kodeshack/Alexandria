@@ -47,7 +47,7 @@ type User struct {
 }
 
 // Following https://tools.ietf.org/html/draft-irtf-cfrg-argon2-03#section-4
-var (
+const (
 	argon2KeyLen  uint32 = 32
 	argon2Memory  uint32 = 1024 * 1024 // 1GiB
 	argon2Threads uint8  = 4
