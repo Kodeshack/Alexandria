@@ -1,31 +1,60 @@
 {{define "content"}}
-<h1>Account</h1>
+<h1 class="title is-3">Account</h1>
 
-<form method="post" action="/user/update">
-    <label for="email">Email</label>
-    <input name="email" type="email" value="{{ .Data.Email }}" />
+<div class="columns">
+    <div class="column">
+        <h2 class="title is-4">Profile</h2>
+        <form method="post" action="/user/update">
+            <div class="field">
+                <label for="email">Email</label>
+                <div class="control">
+                    <input class="input" name="email" type="email" value="{{ .Data.Email }}" />
+                </div>
+            </div>
 
-    <label for="display_name">Display name</label>
-    <input name="display_name" value="{{ .Data.DisplayName }}" />
+            <div class="field">
+                <label for="display_name">Display name</label>
+                <div class="control">
+                    <input class="input" name="display_name" type="text" value="{{ .Data.DisplayName }}" />
+                </div>
+            </div>
 
-    <input type="submit" value="Update profile" />
-</form>
+            <input class="button is-primary" type="submit" value="Update profile" />
+        </form>
+    </div>
+    <div class="column">
+        <h2 class="title is-4">Password</h2>
+        <form method="post" action="/user/password">
+            <div class="field">
+                <label for="old_password">Old password</label>
+                <div class="control">
+                    <input class="input" name="old_password" type="password" />
+                </div>
+            </div>
 
-<form method="post" action="/user/password">
-    <label for="old_password">Old password</label>
-    <input name="old_password" type="password" />
+            <div class="field">
+                <label for="new_password">New password</label>
+                <div class="control">
+                    <input class="input" name="new_password" type="password" />
+                </div>
+            </div>
 
-    <label for="new_password">New password</label>
-    <input name="new_password" type="password" />
+            <div class="field">
+                <label for="confirm_new_password">Confirm new password</label>
+                <div class="control">
+                    <input class="input" name="confirm_new_password" type="password" />
+                </div>
+            </div>
 
-    <label for="confirm_new_password">Confirm new password</label>
-    <input name="confirm_new_password" type="password" />
+            <input class="button is-primary" type="submit" value="Update password" />
+        </form>
 
-    <input type="submit" value="Update password" />
-</form>
+        <hr />
 
-<form action="/user/delete" method="post">
-    <input name="id" type="hidden" value="{{.Data.ID}}" />
-    <input type="submit" value="Delete account" />
-</form>
+        <form action="/user/delete" method="post">
+            <input name="id" type="hidden" value="{{.Data.ID}}" />
+            <input class="button is-danger" type="submit" value="Delete account" />
+        </form>
+    </div>
+</div>
 {{end}}

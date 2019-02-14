@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -19,13 +20,14 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 	}).Methods(http.MethodGet)
 
 	r.HandleFunc("/articles/new", func(w http.ResponseWriter, r *http.Request) {
-		if models.GetRequestSession(r) == nil {
+		user := models.GetRequestUser(r)
+		if user == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
-		v := view.New("layout", "editor", config, nil)
-		if err := v.Render(w); err != nil {
+		v := view.New("layout", "editor", config)
+		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -61,7 +63,8 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 	}).Methods(http.MethodPost)
 
 	r.HandleFunc(`/articles/{path:[\w\d_/-]+}`, func(w http.ResponseWriter, r *http.Request) {
-		if models.GetRequestSession(r) == nil {
+		user := models.GetRequestUser(r)
+		if user == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -85,8 +88,8 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			}
 
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			v := view.New("layout", "category", config, category)
-			if err := v.Render(w); err != nil {
+			v := view.New("layout", "category", config)
+			if err := v.Render(w, user, category); err != nil {
 				log.Print(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
@@ -98,15 +101,18 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 				return
 			}
 
-			data, err := article.ContentHTML()
+			body, err := article.ContentHTML()
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
-			w.Header().Set("Content-Type", "text/html; charset=utf-8")
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+			v := view.New("layout", "article", config)
+			if err := v.Render(w, user, template.HTML(body)); err != nil {
+				log.Print(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 		}
 	}).Methods(http.MethodGet)
 }

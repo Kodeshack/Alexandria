@@ -46,5 +46,8 @@ func main() {
 	// Content-related routes.
 	routes.ArticleRoutes(r, config)
 
+	// Asset-related routes
+	routes.AssetRoutes(r, config)
+
 	log.Fatal(http.ListenAndServe(config.Host+config.Port, r))
 }

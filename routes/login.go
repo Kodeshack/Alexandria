@@ -13,9 +13,9 @@ import (
 
 func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		v := view.New("layout", "login", config, nil)
+		v := view.New("layout", "login", config)
 
-		if err := v.Render(w); err != nil {
+		if err := v.Render(w, nil, nil); err != nil {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
@@ -27,9 +27,9 @@ func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if len(email) == 0 || len(password) == 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			v := view.New("layout", "login", config, nil)
+			v := view.New("layout", "login", config)
 
-			if err := v.Render(w); err != nil {
+			if err := v.Render(w, nil, nil); err != nil {
 				log.Print(err)
 				return
 			}
@@ -40,9 +40,9 @@ func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		user := userStorage.CheckUserLogin(email, password)
 		if user == nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			v := view.New("layout", "login", config, nil)
+			v := view.New("layout", "login", config)
 
-			if err := v.Render(w); err != nil {
+			if err := v.Render(w, nil, nil); err != nil {
 				log.Print(err)
 				return
 			}

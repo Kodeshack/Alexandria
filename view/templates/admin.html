@@ -1,19 +1,19 @@
 {{define "content"}}
+<h1 class="title is-3">Admin</h1>
 
-<h1>Admin</h1>
-
-<p><a href="/user/new">Create new user</a></p>
-
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Email</th>
-        <th>Display name</th>
-        <th>Admin</th>
-        <th>Date created</th>
-        <th>Delete</th>
-    </tr>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Display name</th>
+            <th>Admin</th>
+            <th>Date created</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
     {{ range .Data -}}
+    <tbody>
     <tr>
         <td>{{.ID}}</td>
         <td>{{.Email}}</td>
@@ -23,10 +23,13 @@
         <td>
             <form action="/user/delete" method="post">
                 <input name="id" type="hidden" value="{{.ID}}" />
-                <input type="submit" value="X" />
+                <input class="button is-danger is-small" type="submit" value="X" />
             </form>
         </td>
     </tr>
     {{ end }}
+    </tbody>
 </table>
+
+<a class="button is-primary" href="/user/new">Create new user</a>
 {{end}}

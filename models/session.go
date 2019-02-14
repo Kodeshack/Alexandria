@@ -88,6 +88,14 @@ func GetRequestSession(r *http.Request) *Session {
 	return nil
 }
 
+func GetRequestUser(r *http.Request) *User {
+	if session := GetRequestSession(r); session != nil {
+		return session.User
+	}
+
+	return nil
+}
+
 func NewSessionStorage() *SessionStorage {
 	return &SessionStorage{
 		sessions:  []*Session{},

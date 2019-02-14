@@ -1,8 +1,15 @@
 notifications:
     email: false
+dist: xenial
 language: go
+cache:
+  directories:
+    - $HOME/dep/sassc/bin
 go:
   - 1.11.x
+before_install:
+  - scripts/ci_build_sassc.sh
+  - export PATH=$PATH:$HOME/dep/sassc/bin
 install: true
 branches:
     only:

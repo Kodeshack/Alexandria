@@ -1,10 +1,10 @@
 {{define "content"}}
-
-<ul>
-    <li><a href="{{ $.Config.BaseURL }}articles/{{ .Data.Parent }}">..</a></li>
-    {{ range .Data.Entries }}
-    <li><a href="{{ $.Config.BaseURL }}articles/{{ $.Data.Name }}/{{ . }}">{{ . }}</a></li>
-    {{ end }}
-</ul>
-
+<div class="content">
+    <ul>
+        <li><a href="{{ $.Config.BaseURL }}articles/{{ .Data.Parent }}">..</a></li>
+        {{range .Data.Entries}}
+        <li><a href="{{ $.Config.BaseURL }}articles/{{ $.Data.Name }}/{{ . }}">{{ . }}</a></li>
+        {{end}}
+    </ul>
+</div>
 {{end}}

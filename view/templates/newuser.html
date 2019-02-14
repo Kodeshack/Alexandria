@@ -1,23 +1,42 @@
-
 {{define "content"}}
-<h1>Create User</h1>
+<h1 class="title is-3">Create User</h1>
 
 <form method="post" action="/user/new">
-    <label for="email">Email</label>
-    <input name="email" type="email" />
-    <br />
-    <label for="display_name">Display name</label>
-    <input name="display_name" />
-    <br />
-    <label for="admin">Admin</label>
-    <input name="admin" type="checkbox" />
-    <br />
-    <label for="password">Password</label>
-    <input name="password" type="password" />
-    <br />
-    <label for="confirm_password">Confirm password</label>
-    <input name="confirm_password" type="password" />
-    <br />
-    <input type="submit" value="Create user" />
+    <div class="field">
+        <label for="email">Email</label>
+        <div class="control">
+            <input class="input" name="email" type="email" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="display_name">Display name</label>
+        <div class="control">
+            <input class="input" name="display_name" type="text" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label class="checkbox">
+            <input name="admin" type="checkbox">
+            Is admin
+        </label>
+    </div>
+
+    <div class="field">
+        <label for="password">Password</label>
+        <div class="control">
+            <input class="input" name="password" type="password" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <div class="control">
+            <input class="input" name="confirm_password" type="password" />
+        </div>
+    </div>
+
+    <input class="button is-primary" type="submit" value="Create user" />
 </form>
 {{end}}

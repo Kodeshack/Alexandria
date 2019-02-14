@@ -1,8 +1,47 @@
 {{define "layout"}}
 <!doctype html>
 <html lang="en">
+<head>
+    <link rel="stylesheet" href="/assets/main.css">
+</head>
 <body>
-    {{template "content" .}}
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="{{ .Config.BaseURL }}">
+                    <h1 class="title">Alexandria</h1>
+                </a>
+            </div>
+            {{if .User}}
+            <div class="navbar-menu">
+                <div class=navbar-start>
+                    <div class="buttons">
+                        <a class="navbar-item button is-primary is-small" href="/articles/new">New Article</a>
+                    </div>
+                </div>
+                <div class=navbar-end>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">Settings</a>
+                        <div class="navbar-dropdown">
+                            <a class="navbar-item" href="/user">Account</a>
+                            {{if .User.Admin}}
+                            <a class="navbar-item" href="/admin">Admin</a>
+                            {{end}}
+                            <hr class="navbar-divider">
+                            <a class="navbar-item" href="/logout">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </nav>
+
+    <div class="section">
+        <div class="container">
+            {{template "content" .}}
+        </div>
+    </div>
 </body>
 </html>
 {{end}}

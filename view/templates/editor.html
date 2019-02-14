@@ -1,12 +1,15 @@
 {{define "content"}}
 <form method="post" action="/articles/save">
-    <label for="title">Title</label>
-    <input name="title" type="text" />
+    <div class="field">
+        <label for="title">Title</label>
+        <div class="control">
+            <input class="input" name="title" type="text" />
+        </div>
+    </div>
+
+    <textarea class="textarea" name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
 
     <br />
-    <textarea name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
-
-    <br />
-    <input type="submit" value="Save" />
+    <input class="button is-primary" type="submit" value="Save" />
 </form>
 {{end}}

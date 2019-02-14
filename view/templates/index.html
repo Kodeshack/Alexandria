@@ -1,28 +1,13 @@
 {{define "content"}}
+<div class="content">
+    <h2 class="title is-3">Categories</h2>
 
-<h1>Alexandria</h1>
-<h2>The minimalist wiki written in Go</h2>
-
-{{if .Data.User}}
-    <h3>Hello, {{ .Data.User.DisplayName }}</h3>
-
+    {{if .User}}
     <ul>
-        {{ range .Data.Category.Entries -}}
+        {{range .Data.Entries -}}
         <li><a href="{{ $.Config.BaseURL }}articles/{{ . }}">{{ . }}</a></li>
-        {{ end }}
+        {{end}}
     </ul>
-
-    <a href="/articles/new">New Article</a>
-    <br />
-    <a href="/user">Account</a>
-    <br />
-    {{if .Data.User.Admin}}
-    <a href="/admin">Admin</a>
-    <br />
     {{end}}
-    <a href="/logout">Logout</a>
-{{else}}
-    <a href="/login">Login</a>
-{{end}}
-
+</div>
 {{end}}

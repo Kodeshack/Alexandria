@@ -14,16 +14,16 @@ import (
 
 func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
+		user := models.GetRequestUser(r)
 
-		if session == nil {
+		if user == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
 
-		v := view.New("layout", "user", config, session.User)
+		v := view.New("layout", "user", config)
 
-		if err := v.Render(w); err != nil {
+		if err := v.Render(w, user, user); err != nil {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -31,22 +31,22 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 	}).Methods(http.MethodGet)
 
 	r.HandleFunc("/user/new", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
+		user := models.GetRequestUser(r)
 
 		if !userStorage.IsEmpty() {
-			if session == nil {
+			if user == nil {
 				http.Redirect(w, r, "/login", http.StatusFound)
 				return
 			}
 
-			if !session.User.Admin {
+			if !user.Admin {
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
 		}
 
-		v := view.New("layout", "newuser", config, nil)
-		if err := v.Render(w); err != nil {
+		v := view.New("layout", "newuser", config)
+		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return

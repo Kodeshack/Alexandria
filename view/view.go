@@ -12,15 +12,15 @@ type View struct {
 	layout   string
 	template string
 	config   *models.Config
-	data     interface{}
 }
 
 type viewDataWrapper struct {
 	Config *models.Config
 	Data   interface{}
+	User   *models.User
 }
 
-func (v *View) Render(w io.Writer) error {
+func (v *View) Render(w io.Writer, user *models.User, data interface{}) error {
 	tmpl, err := template.New(v.layout).ParseFiles(
 		filepath.Join(v.config.TemplateDirectory, v.layout+".html"),
 		filepath.Join(v.config.TemplateDirectory, v.template+".html"),
@@ -32,15 +32,15 @@ func (v *View) Render(w io.Writer) error {
 
 	return tmpl.Execute(w, &viewDataWrapper{
 		Config: v.config,
-		Data:   v.data,
+		Data:   data,
+		User:   user,
 	})
 }
 
-func New(layout, template string, config *models.Config, data interface{}) *View {
+func New(layout, template string, config *models.Config) *View {
 	return &View{
 		layout:   layout,
 		template: template,
 		config:   config,
-		data:     data,
 	}
 }

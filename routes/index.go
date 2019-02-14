@@ -12,22 +12,16 @@ import (
 
 func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		type viewData struct {
-			User     *models.User
-			Category *models.Category
-		}
-
-		data := viewData{}
+		var user *models.User
 
 		if session := models.GetRequestSession(r); session != nil {
-			data.User = session.User
+			user = session.User
 		}
 
-		if category := models.NewCategory("", config.ContentPath); category != nil {
+		var category *models.Category
+		if category = models.NewCategory("", config.ContentPath); category != nil {
 			if err := category.ScanEntries(); err != nil {
 				log.Printf("Error while reading root categroy %v", err)
-			} else {
-				data.Category = category
 			}
 		}
 
@@ -36,9 +30,9 @@ func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 			return
 		}
 
-		v := view.New("layout", "index", config, data)
+		v := view.New("layout", "index", config)
 
-		if err := v.Render(w); err != nil {
+		if err := v.Render(w, user, category); err != nil {
 			log.Print(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
