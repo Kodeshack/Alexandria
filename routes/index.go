@@ -13,7 +13,7 @@ import (
 func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if userStorage.IsEmpty() {
-			http.Redirect(w, r, "/user/new", http.StatusFound)
+			http.Redirect(w, r, "/setup", http.StatusFound)
 			return
 		}
 

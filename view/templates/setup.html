@@ -1,0 +1,35 @@
+{{define "content"}}
+<h1 class="title is-3">Create User</h1>
+
+<form method="post" action="/setup">
+    <div class="field">
+        <label for="email">Email</label>
+        <div class="control">
+            <input class="input" name="email" type="email" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="display_name">Display name</label>
+        <div class="control">
+            <input class="input" name="display_name" type="text" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="password">Password</label>
+        <div class="control">
+            <input class="input" name="password" type="password" />
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <div class="control">
+            <input class="input" name="confirm_password" type="password" />
+        </div>
+    </div>
+
+    <input class="button is-primary" type="submit" value="Create user" />
+</form>
+{{end}}

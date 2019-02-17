@@ -33,6 +33,9 @@ func main() {
 
 	r.Use(routes.AuthMiddleWare(sessionStorage))
 
+	setup := r.PathPrefix("/setup").Subrouter()
+	routes.SetupRoutes(setup, config, userStorage, sessionStorage)
+
 	routes.IndexRoutes(r, config, userStorage)
 
 	// Session-related routes.
