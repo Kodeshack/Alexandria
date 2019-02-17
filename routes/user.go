@@ -33,16 +33,14 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 	r.HandleFunc("/user/new", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
 
-		if !userStorage.IsEmpty() {
-			if user == nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
-				return
-			}
+		if user == nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
 
-			if !user.Admin {
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
+		if !user.Admin {
+			w.WriteHeader(http.StatusForbidden)
+			return
 		}
 
 		v := view.New("layout", "newuser", config)
@@ -54,18 +52,16 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 	}).Methods(http.MethodGet)
 
 	r.HandleFunc("/user/new", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
+		sessionUser := models.GetRequestUser(r)
 
-		if !userStorage.IsEmpty() {
-			if session == nil {
-				http.Redirect(w, r, "/login", http.StatusFound)
-				return
-			}
+		if sessionUser == nil {
+			http.Redirect(w, r, "/login", http.StatusFound)
+			return
+		}
 
-			if !session.User.Admin {
-				w.WriteHeader(http.StatusForbidden)
-				return
-			}
+		if !sessionUser.Admin {
+			w.WriteHeader(http.StatusForbidden)
+			return
 		}
 
 		email := r.FormValue("email")
@@ -112,14 +108,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 			return
 		}
 
-		if session == nil {
-			session = models.NewSession(user)
-			sessionStorage.AddSession(session)
-			http.SetCookie(w, session.Cookie(false))
-			http.Redirect(w, r, "/", http.StatusFound)
-		} else {
-			http.Redirect(w, r, "/admin", http.StatusFound)
-		}
+		http.Redirect(w, r, "/admin", http.StatusFound)
 	}).Methods(http.MethodPost)
 
 	r.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
