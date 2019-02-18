@@ -16,13 +16,6 @@ import (
 	"alexandria.app/crypto"
 )
 
-type CreateUser struct {
-	Email       string `json:"email"`
-	DisplayName string `json:"display_name"`
-	Password    string `json:"password"`
-	Admin       bool   `json:"admin"`
-}
-
 type JSONUser struct {
 	ID           uint32 `json:"id"`
 	Admin        bool   `json:"admin"`
