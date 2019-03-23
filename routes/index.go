@@ -34,7 +34,7 @@ func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if err := v.Render(w, user, category); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)

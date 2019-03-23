@@ -1,0 +1,9 @@
+{{define "content"}}
+<div class="content">
+    <small>Well... that wasn't supposed to happen...</small>
+    <h1>{{.Data.StatusCode}} - {{.Data.StatusText}}</h1>
+    {{ $length := len .Data.Message }} {{ if gt $length 0 }}
+    <h3>{{.Data.Message}}</h3>
+    {{- end }}
+</div>
+{{end}}

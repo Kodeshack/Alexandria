@@ -19,14 +19,14 @@ func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		}
 
 		if !user.Admin {
-			w.WriteHeader(http.StatusForbidden)
+			view.RenderErrorView("", http.StatusForbidden, config, user, w)
 			return
 		}
 
 		v := view.New("layout", "admin", config)
 		if err := v.Render(w, user, userStorage.GetUsers()); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)

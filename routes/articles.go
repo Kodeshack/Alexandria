@@ -29,13 +29,14 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		v := view.New("layout", "editor", config)
 		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
 
 	r.HandleFunc("/articles/save", func(w http.ResponseWriter, r *http.Request) {
-		if models.GetRequestSession(r) == nil {
+		user := models.GetRequestUser(r)
+		if user == nil {
 			http.Redirect(w, r, "/login", http.StatusFound)
 			return
 		}
@@ -55,7 +56,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 		err := article.Write()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 
@@ -72,7 +73,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		vars := mux.Vars(r)
 		path := vars["path"]
 		if len(path) == 0 {
-			w.WriteHeader(http.StatusNotFound)
+			view.RenderErrorView("", http.StatusNotFound, config, user, w)
 			return
 		}
 
@@ -83,7 +84,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		if stat != nil && stat.IsDir() {
 			category := models.NewCategory(path, realPath)
 			if err := category.ScanEntries(); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 				return
 			}
 
@@ -91,26 +92,26 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			v := view.New("layout", "category", config)
 			if err := v.Render(w, user, category); err != nil {
 				log.Print(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 				return
 			}
 		} else {
 			article, err := models.LoadArticle(realPath + ".md")
 			if err != nil {
-				w.WriteHeader(http.StatusNotFound)
+				view.RenderErrorView("", http.StatusNotFound, config, user, w)
 				return
 			}
 
 			body, err := article.ContentHTML()
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 				return
 			}
 
 			v := view.New("layout", "article", config)
 			if err := v.Render(w, user, template.HTML(body)); err != nil {
 				log.Print(err)
-				w.WriteHeader(http.StatusInternalServerError)
+				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 				return
 			}
 		}

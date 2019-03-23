@@ -17,7 +17,7 @@ func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if err := v.Render(w, nil, nil); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
 		}
 	}).Methods(http.MethodGet)
 
@@ -31,6 +31,7 @@ func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 			if err := v.Render(w, nil, nil); err != nil {
 				log.Print(err)
+				view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
 				return
 			}
 
@@ -44,6 +45,7 @@ func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 			if err := v.Render(w, nil, nil); err != nil {
 				log.Print(err)
+				view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
 				return
 			}
 			return

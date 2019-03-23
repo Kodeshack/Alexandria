@@ -25,7 +25,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		if err := v.Render(w, user, user); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -39,14 +39,14 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		}
 
 		if !user.Admin {
-			w.WriteHeader(http.StatusForbidden)
+			view.RenderErrorView("", http.StatusForbidden, config, user, w)
 			return
 		}
 
 		v := view.New("layout", "newuser", config)
 		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -60,7 +60,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		}
 
 		if !sessionUser.Admin {
-			w.WriteHeader(http.StatusForbidden)
+			view.RenderErrorView("", http.StatusForbidden, config, sessionUser, w)
 			return
 		}
 
@@ -71,18 +71,18 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		passwordConfirmation := r.FormValue("confirm_password")
 
 		if len(email) == 0 || len(displayName) == 0 || len(password) == 0 || len(passwordConfirmation) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
 			return
 		}
 
 		if password != passwordConfirmation {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
 			return
 		}
 
 		parsedEmail, err := mail.ParseAddress(email)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
 			return
 		}
 		email = parsedEmail.Address
@@ -90,21 +90,21 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		user, err := models.NewUser(email, displayName, password, admin)
 		if err != nil {
 			log.Fatal(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, sessionUser, w)
 			return
 		}
 
 		err = userStorage.AddUser(user)
 		if err != nil {
 			// User already exists or, very unlikely, a UUID collision.
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
 			return
 		}
 
 		err = userStorage.Save()
 		if err != nil {
 			log.Fatal(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, sessionUser, w)
 			return
 		}
 
@@ -124,13 +124,13 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		displayName := strings.TrimSpace(r.FormValue("display_name"))
 
 		if len(email) == 0 || len(displayName) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
 			return
 		}
 
 		parsedEmail, err := mail.ParseAddress(email)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
 			return
 		}
 
@@ -139,7 +139,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		if err = userStorage.Save(); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 
@@ -159,35 +159,35 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		newPasswordConfirmation := r.FormValue("confirm_new_password")
 
 		if len(oldPassword) == 0 || len(newPassword) == 0 || len(newPasswordConfirmation) == 0 {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if newPassword != newPasswordConfirmation {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if oldPassword == newPassword {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		user := userStorage.CheckUserPassword(session.User, oldPassword)
 		if user == nil {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if err := userStorage.SetUserPassword(user, newPassword); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
 			return
 		}
 
 		if err := userStorage.Save(); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
 			return
 		}
 
@@ -205,13 +205,13 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		idt, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
 			return
 		}
 		id := uint32(idt)
 
 		if id != user.ID && !user.Admin {
-			w.WriteHeader(http.StatusForbidden)
+			view.RenderErrorView("", http.StatusForbidden, config, user, w)
 			return
 		}
 
@@ -219,7 +219,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		if err = userStorage.Save(); err != nil {
 			log.Print(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
 			return
 		}
 
