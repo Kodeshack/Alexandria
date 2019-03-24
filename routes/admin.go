@@ -3,6 +3,9 @@ package routes
 import (
 	"log"
 	"net/http"
+	"net/mail"
+	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 
@@ -10,24 +13,93 @@ import (
 	"alexandria.app/view"
 )
 
-func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage) {
+func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
-		if !user.Admin {
-			view.RenderErrorView("", http.StatusForbidden, config, user, w)
-			return
-		}
 
 		v := view.New("layout", "admin", config)
 		if err := v.Render(w, user, userStorage.GetUsers()); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 	}).Methods(http.MethodGet)
+
+	r.HandleFunc("/admin/create_user", func(w http.ResponseWriter, r *http.Request) {
+		session := models.GetRequestSession(r)
+
+		email := r.FormValue("email")
+		displayName := strings.TrimSpace(r.FormValue("display_name"))
+		admin := r.FormValue("admin") == "on"
+		password := r.FormValue("password")
+		passwordConfirmation := r.FormValue("confirm_password")
+
+		if len(email) == 0 || len(displayName) == 0 || len(password) == 0 || len(passwordConfirmation) == 0 {
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			return
+		}
+
+		if password != passwordConfirmation {
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			return
+		}
+
+		parsedEmail, err := mail.ParseAddress(email)
+		if err != nil {
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			return
+		}
+		email = parsedEmail.Address
+
+		user, err := models.NewUser(email, displayName, password, admin)
+		if err != nil {
+			log.Fatal(err)
+			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
+			return
+		}
+
+		err = userStorage.AddUser(user)
+		if err != nil {
+			// User already exists or, very unlikely, a UUID collision.
+			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			return
+		}
+
+		err = userStorage.Save()
+		if err != nil {
+			log.Fatal(err)
+			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
+			return
+		}
+
+		http.Redirect(w, r, "/admin", http.StatusFound)
+	}).Methods(http.MethodPost)
+
+	r.HandleFunc("/admin/delete_user", func(w http.ResponseWriter, r *http.Request) {
+		user := models.GetRequestUser(r)
+
+		idt, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
+		if err != nil {
+			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
+			return
+		}
+		id := uint32(idt)
+
+		userStorage.DeleteUser(id)
+
+		if err = userStorage.Save(); err != nil {
+			log.Print(err)
+			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			return
+		}
+
+		sessionStorage.RemoveSessionsForUser(id)
+
+		if user.ID == id {
+			http.SetCookie(w, models.RemoveSessionCookie(false))
+			http.Redirect(w, r, "/", http.StatusFound)
+		} else {
+			http.Redirect(w, r, "/admin", http.StatusFound)
+		}
+	}).Methods(http.MethodPost)
 }

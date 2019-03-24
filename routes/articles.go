@@ -21,10 +21,6 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 	r.HandleFunc("/articles/new", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
 
 		v := view.New("layout", "editor", config)
 		if err := v.Render(w, user, nil); err != nil {
@@ -36,11 +32,6 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 	r.HandleFunc("/articles/save", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
 		title := strings.TrimSpace(r.FormValue("title"))
 		content := strings.TrimSpace(r.FormValue("content"))
 
@@ -65,10 +56,6 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 	r.HandleFunc(`/articles/{path:[\w\d_/-]+}`, func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
 
 		vars := mux.Vars(r)
 		path := vars["path"]

@@ -16,13 +16,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 	r.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
 
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
 		v := view.New("layout", "user", config)
-
 		if err := v.Render(w, user, user); err != nil {
 			log.Print(err)
 			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
@@ -32,11 +26,6 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 	r.HandleFunc("/user/new", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
-
-		if user == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
 
 		if !user.Admin {
 			view.RenderErrorView("", http.StatusForbidden, config, user, w)
@@ -51,75 +40,8 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		}
 	}).Methods(http.MethodGet)
 
-	r.HandleFunc("/user/new", func(w http.ResponseWriter, r *http.Request) {
-		sessionUser := models.GetRequestUser(r)
-
-		if sessionUser == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
-		if !sessionUser.Admin {
-			view.RenderErrorView("", http.StatusForbidden, config, sessionUser, w)
-			return
-		}
-
-		email := r.FormValue("email")
-		displayName := strings.TrimSpace(r.FormValue("display_name"))
-		admin := r.FormValue("admin") == "on"
-		password := r.FormValue("password")
-		passwordConfirmation := r.FormValue("confirm_password")
-
-		if len(email) == 0 || len(displayName) == 0 || len(password) == 0 || len(passwordConfirmation) == 0 {
-			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
-			return
-		}
-
-		if password != passwordConfirmation {
-			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
-			return
-		}
-
-		parsedEmail, err := mail.ParseAddress(email)
-		if err != nil {
-			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
-			return
-		}
-		email = parsedEmail.Address
-
-		user, err := models.NewUser(email, displayName, password, admin)
-		if err != nil {
-			log.Fatal(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, sessionUser, w)
-			return
-		}
-
-		err = userStorage.AddUser(user)
-		if err != nil {
-			// User already exists or, very unlikely, a UUID collision.
-			view.RenderErrorView("", http.StatusBadRequest, config, sessionUser, w)
-			return
-		}
-
-		err = userStorage.Save()
-		if err != nil {
-			log.Fatal(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, sessionUser, w)
-			return
-		}
-
-		http.Redirect(w, r, "/admin", http.StatusFound)
-	}).Methods(http.MethodPost)
-
 	r.HandleFunc("/user/update", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
-		user := session.User
-
-		if session == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
-
+		user := models.GetRequestUser(r)
 		email := r.FormValue("email")
 		displayName := strings.TrimSpace(r.FormValue("display_name"))
 
@@ -148,11 +70,6 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 	r.HandleFunc("/user/password", func(w http.ResponseWriter, r *http.Request) {
 		session := models.GetRequestSession(r)
-
-		if session == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
 
 		oldPassword := r.FormValue("old_password")
 		newPassword := r.FormValue("new_password")
@@ -195,13 +112,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 	}).Methods(http.MethodPost)
 
 	r.HandleFunc("/user/delete", func(w http.ResponseWriter, r *http.Request) {
-		session := models.GetRequestSession(r)
-		user := session.User
-
-		if session == nil {
-			http.Redirect(w, r, "/login", http.StatusFound)
-			return
-		}
+		user := models.GetRequestUser(r)
 
 		idt, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
 		if err != nil {
@@ -210,7 +121,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		}
 		id := uint32(idt)
 
-		if id != user.ID && !user.Admin {
+		if id != user.ID {
 			view.RenderErrorView("", http.StatusForbidden, config, user, w)
 			return
 		}
@@ -225,11 +136,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		sessionStorage.RemoveSessionsForUser(id)
 
-		if user.ID == id {
-			http.SetCookie(w, models.RemoveSessionCookie(false))
-			http.Redirect(w, r, "/", http.StatusFound)
-		} else {
-			http.Redirect(w, r, "/admin", http.StatusFound)
-		}
+		http.SetCookie(w, models.RemoveSessionCookie(false))
+		http.Redirect(w, r, "/", http.StatusFound)
 	}).Methods(http.MethodPost)
 }

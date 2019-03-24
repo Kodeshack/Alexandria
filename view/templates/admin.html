@@ -21,7 +21,7 @@
         <td>{{.Admin}}</td>
         <td>{{.CreationDate}}</td>
         <td>
-            <form action="/user/delete" method="post">
+            <form action="/admin/delete_user" method="post">
                 <input name="id" type="hidden" value="{{.ID}}" />
                 <input class="button is-danger is-small" type="submit" value="X" />
             </form>
@@ -31,5 +31,5 @@
     </tbody>
 </table>
 
-<a class="button is-primary" href="/user/new">Create new user</a>
+<a class="button is-primary" href="/admin/create_user">Create new user</a>
 {{end}}
