@@ -25,7 +25,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		v := view.New("layout", "editor", config)
 		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to render editor view.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -47,7 +47,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 		err := article.Write()
 		if err != nil {
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to write article file.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 
@@ -71,7 +71,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		if stat != nil && stat.IsDir() {
 			category := models.NewCategory(path, realPath)
 			if err := category.ScanEntries(); err != nil {
-				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+				view.RenderErrorView("Failed to read category directory.", http.StatusInternalServerError, config, user, w)
 				return
 			}
 
@@ -79,7 +79,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			v := view.New("layout", "category", config)
 			if err := v.Render(w, user, category); err != nil {
 				log.Print(err)
-				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+				view.RenderErrorView("Failed to render category view.", http.StatusInternalServerError, config, user, w)
 				return
 			}
 		} else {
@@ -91,14 +91,14 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 
 			body, err := article.ContentHTML()
 			if err != nil {
-				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+				view.RenderErrorView("Failed to render content as HTML.", http.StatusInternalServerError, config, user, w)
 				return
 			}
 
 			v := view.New("layout", "article", config)
 			if err := v.Render(w, user, template.HTML(body)); err != nil {
 				log.Print(err)
-				view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+				view.RenderErrorView("Failed to render article view.", http.StatusInternalServerError, config, user, w)
 				return
 			}
 		}

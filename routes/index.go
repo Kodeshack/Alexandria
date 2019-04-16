@@ -34,7 +34,7 @@ func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		if err := v.Render(w, user, category); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to render index layout.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)

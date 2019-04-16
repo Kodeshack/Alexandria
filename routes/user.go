@@ -19,7 +19,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		v := view.New("layout", "user", config)
 		if err := v.Render(w, user, user); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to render user view.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -35,7 +35,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		v := view.New("layout", "newuser", config)
 		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to render new user view.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -46,13 +46,13 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		displayName := strings.TrimSpace(r.FormValue("display_name"))
 
 		if len(email) == 0 || len(displayName) == 0 {
-			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
+			view.RenderErrorView("Email or display name empty.", http.StatusBadRequest, config, user, w)
 			return
 		}
 
 		parsedEmail, err := mail.ParseAddress(email)
 		if err != nil {
-			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
+			view.RenderErrorView("Invalid email address", http.StatusBadRequest, config, user, w)
 			return
 		}
 
@@ -61,7 +61,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		if err = userStorage.Save(); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to save user to user database.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 
@@ -76,35 +76,35 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 		newPasswordConfirmation := r.FormValue("confirm_new_password")
 
 		if len(oldPassword) == 0 || len(newPassword) == 0 || len(newPasswordConfirmation) == 0 {
-			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			view.RenderErrorView("Old password, new password or new password confirmation empty.", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if newPassword != newPasswordConfirmation {
-			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			view.RenderErrorView("New passwords don't match.", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if oldPassword == newPassword {
-			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			view.RenderErrorView("New password is the same as old password.", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		user := userStorage.CheckUserPassword(session.User, oldPassword)
 		if user == nil {
-			view.RenderErrorView("", http.StatusBadRequest, config, session.User, w)
+			view.RenderErrorView("Incorrect old password.", http.StatusBadRequest, config, session.User, w)
 			return
 		}
 
 		if err := userStorage.SetUserPassword(user, newPassword); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
+			view.RenderErrorView("Failed to update password.", http.StatusInternalServerError, config, session.User, w)
 			return
 		}
 
 		if err := userStorage.Save(); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, session.User, w)
+			view.RenderErrorView("Failed to save user database.", http.StatusInternalServerError, config, session.User, w)
 			return
 		}
 
@@ -116,13 +116,13 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		idt, err := strconv.ParseUint(r.FormValue("id"), 10, 32)
 		if err != nil {
-			view.RenderErrorView("", http.StatusBadRequest, config, user, w)
+			view.RenderErrorView("Invalid user id.", http.StatusBadRequest, config, user, w)
 			return
 		}
 		id := uint32(idt)
 
 		if id != user.ID {
-			view.RenderErrorView("", http.StatusForbidden, config, user, w)
+			view.RenderErrorView("Can't delete currently logged in user.", http.StatusForbidden, config, user, w)
 			return
 		}
 
@@ -130,7 +130,7 @@ func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserSto
 
 		if err = userStorage.Save(); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, user, w)
+			view.RenderErrorView("Failed to save user database.", http.StatusInternalServerError, config, user, w)
 			return
 		}
 

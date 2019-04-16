@@ -26,7 +26,7 @@ func SetupRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		v := view.New("layout", "setup", config)
 		if err := v.Render(w, nil, nil); err != nil {
 			log.Print(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
+			view.RenderErrorView("Failed to render setup view.", http.StatusInternalServerError, config, nil, w)
 			return
 		}
 	}).Methods(http.MethodGet)
@@ -38,18 +38,18 @@ func SetupRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		passwordConfirmation := r.FormValue("confirm_password")
 
 		if len(email) == 0 || len(displayName) == 0 || len(password) == 0 || len(passwordConfirmation) == 0 {
-			view.RenderErrorView("", http.StatusBadRequest, config, nil, w)
+			view.RenderErrorView("Email, display name, password or password confirmation empty.", http.StatusBadRequest, config, nil, w)
 			return
 		}
 
 		if password != passwordConfirmation {
-			view.RenderErrorView("", http.StatusBadRequest, config, nil, w)
+			view.RenderErrorView("Passwords don't match.", http.StatusBadRequest, config, nil, w)
 			return
 		}
 
 		parsedEmail, err := mail.ParseAddress(email)
 		if err != nil {
-			view.RenderErrorView("", http.StatusBadRequest, config, nil, w)
+			view.RenderErrorView("Invalid email address.", http.StatusBadRequest, config, nil, w)
 			return
 		}
 		email = parsedEmail.Address
@@ -57,21 +57,21 @@ func SetupRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 		user, err := models.NewUser(email, displayName, password, true) // First user has to be an admin.
 		if err != nil {
 			log.Fatal(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
+			view.RenderErrorView("Failed to create new user.", http.StatusInternalServerError, config, nil, w)
 			return
 		}
 
 		err = userStorage.AddUser(user)
 		if err != nil {
 			// User already exists or, very unlikely, a UUID collision.
-			view.RenderErrorView("", http.StatusBadRequest, config, nil, w)
+			view.RenderErrorView("Failed to add user to user database.", http.StatusBadRequest, config, nil, w)
 			return
 		}
 
 		err = userStorage.Save()
 		if err != nil {
 			log.Fatal(err)
-			view.RenderErrorView("", http.StatusInternalServerError, config, nil, w)
+			view.RenderErrorView("Failed to save user database.", http.StatusInternalServerError, config, nil, w)
 			return
 		}
 
