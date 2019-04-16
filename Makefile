@@ -3,7 +3,11 @@
 fmt:
 	gofmt -s -w *.go */*.go
 
-test:
+.PHONY: vet
+vet:
+	go vet ./...
+
+test: vet
 	go test -cover -race -v ./...
 
 release: css
