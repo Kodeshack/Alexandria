@@ -10,6 +10,10 @@ vet:
 test: vet
 	go test -cover -race -v ./...
 
+.PHONY: lint
+lint:
+	golint ./...
+
 release: css
 	go build -ldflags="-w -s" -o alexandria main.go
 
