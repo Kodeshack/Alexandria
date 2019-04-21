@@ -2,12 +2,12 @@
 <div class="content">
     <h2 class="title is-3">Categories</h2>
 
-    {{if .User}}
+    {{if .User -}}
     <ul>
-        {{range .Data.Entries -}}
+        {{- range .Data.Entries}}
         <li><a href="{{ $.Config.BaseURL }}articles/{{ . }}">{{ . }}</a></li>
-        {{end}}
+        {{- end}}
     </ul>
-    {{end}}
+    {{- end}}
 </div>
 {{end}}
