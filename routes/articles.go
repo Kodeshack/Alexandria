@@ -54,7 +54,7 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		http.Redirect(w, r, "/articles/"+title, http.StatusFound)
 	}).Methods(http.MethodPost)
 
-	r.HandleFunc(`/articles/{path:[\w\d_/-]+}`, func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc(`/articles/{path:[\w\d_ /-]+}`, func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
 
 		vars := mux.Vars(r)
