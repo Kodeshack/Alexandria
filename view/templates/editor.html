@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <textarea class="textarea" name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
+    <textarea id="editor" class="textarea" name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
 
     <br />
     <input class="button is-primary" type="submit" value="Save" />

@@ -2,7 +2,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="/assets/main.css">
+    <link rel="stylesheet" href="/assets/main.css" />
+    {{- range .Styles}}
+    <link rel="stylesheet" href="/assets/{{ . }}" />
+    {{end -}}
 </head>
 <body>
     <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -42,6 +45,11 @@
             {{- template "content" . -}}
         </div>
     </div>
+
+    {{- range .Scripts}}
+        <script type="application/javascript" src="/assets/{{ . }}"></script>
+    {{- end -}}
+
 </body>
 </html>
 {{- end}}
