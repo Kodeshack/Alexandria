@@ -23,6 +23,8 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		user := models.GetRequestUser(r)
 
 		v := view.New("layout", "editor", config)
+		v.Styles = []string{"codemirror.css", "xq-light.css"}
+		v.Scripts = []string{"codemirror.js", "markdown.js", "vim.js", "editor.js"}
 		if err := v.Render(w, user, nil); err != nil {
 			log.Print(err)
 			view.RenderErrorView("Failed to render editor view.", http.StatusInternalServerError, config, user, w)

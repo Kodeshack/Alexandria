@@ -12,12 +12,16 @@ type View struct {
 	layout   string
 	template string
 	config   *models.Config
+	Styles   []string
+	Scripts  []string
 }
 
 type viewDataWrapper struct {
-	Config *models.Config
-	Data   interface{}
-	User   *models.User
+	Config  *models.Config
+	Data    interface{}
+	User    *models.User
+	Styles  []string
+	Scripts []string
 }
 
 func (v *View) Render(w io.Writer, user *models.User, data interface{}) error {
@@ -31,9 +35,11 @@ func (v *View) Render(w io.Writer, user *models.User, data interface{}) error {
 	}
 
 	return tmpl.Execute(w, &viewDataWrapper{
-		Config: v.config,
-		Data:   data,
-		User:   user,
+		Config:  v.config,
+		Data:    data,
+		User:    user,
+		Styles:  v.Styles,
+		Scripts: v.Scripts,
 	})
 }
 
