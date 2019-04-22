@@ -1,3 +1,6 @@
 [submodule "assets/src/bulma"]
 	path = assets/src/bulma
 	url = https://github.com/jgthms/bulma.git
+[submodule "assets/src/CodeMirror"]
+	path = assets/src/CodeMirror
+	url = https://github.com/Dominator008/CodeMirror-minified.git
