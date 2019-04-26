@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 )
 
+// Config containts all the (global) configuration needed to make Alexandria run.
+// In most cases this struct should be created by using the NewConfig function.
 type Config struct {
 	ContentPath       string
 	UserStoragePath   string
@@ -24,7 +26,8 @@ func getEnvVar(n, def string) string {
 	return def
 }
 
-/// This will read from environment variables.
+// NewConfig reads from environment variables to construct the Config object.
+// If an environment variable is not defined a default value will be used instead.
 func NewConfig() *Config {
 	dataPath := getEnvVar("ALEXANDRIA_DATA_PATH", "data")
 	return &Config{
