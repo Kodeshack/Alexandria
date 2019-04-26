@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// UserRoutes sets up all HTTP routes required for user management.
 func UserRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/user", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
