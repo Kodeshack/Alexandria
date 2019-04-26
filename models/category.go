@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+// A Category is essentially a folder which contains either more folders
+// or article files.
 type Category struct {
 	Name    string
 	Parent  string
@@ -13,6 +15,7 @@ type Category struct {
 	Entries []string
 }
 
+// NewCategory is a convenience function to create a new Category.
 func NewCategory(name, path string) *Category {
 	d, _ := filepath.Split(name)
 	parent := d
@@ -28,6 +31,7 @@ func NewCategory(name, path string) *Category {
 	}
 }
 
+// ScanEntries reads the entries of the folder at which the category points.
 func (c *Category) ScanEntries() error {
 	files, err := ioutil.ReadDir(c.Path)
 	if err != nil {
