@@ -49,6 +49,7 @@ func authedAdminMiddleware(config *models.Config) mux.MiddlewareFunc {
 	}
 }
 
+// Start will setup all HTTP routes and start the HTTP server.
 func Start(userStorage models.UserStorage, sessionStorage *models.SessionStorage, config *models.Config) {
 	r := mux.NewRouter()
 
