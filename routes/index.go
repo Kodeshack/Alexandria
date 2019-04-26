@@ -10,6 +10,7 @@ import (
 	"alexandria.app/view"
 )
 
+// IndexRoutes sets up the index routes for the system.
 func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if userStorage.IsEmpty() {
