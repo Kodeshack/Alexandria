@@ -8,6 +8,7 @@ import (
 	"alexandria.app/models"
 )
 
+// A View represents a template which can be rendered to HTML.
 type View struct {
 	layout   string
 	template string
@@ -20,6 +21,7 @@ type viewDataWrapper struct {
 	User   *models.User
 }
 
+// Render exectutes the template and writes the resulting HTML to the io.Writer.
 func (v *View) Render(w io.Writer, user *models.User, data interface{}) error {
 	tmpl, err := template.New(v.layout).ParseFiles(
 		filepath.Join(v.config.TemplateDirectory, v.layout+".html"),
@@ -37,6 +39,7 @@ func (v *View) Render(w io.Writer, user *models.User, data interface{}) error {
 	})
 }
 
+// New creates a new View struct from the layout, template and config.
 func New(layout, template string, config *models.Config) *View {
 	return &View{
 		layout:   layout,

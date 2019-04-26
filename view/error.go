@@ -13,6 +13,7 @@ type errorViewData struct {
 	Message    string
 }
 
+// RenderErrorView will use the provided information to render an "informative" error view.
 func RenderErrorView(msg string, statusCode int, config *models.Config, user *models.User, w http.ResponseWriter) {
 	data := &errorViewData{
 		StatusCode: statusCode,
