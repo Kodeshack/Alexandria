@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ArticleRoutes sets up all HTTP routes for creating/viewing/editing routes and categories.
 func ArticleRoutes(r *mux.Router, config *models.Config) {
 	r.HandleFunc("/articles/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
