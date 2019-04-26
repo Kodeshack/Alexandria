@@ -15,6 +15,7 @@ import (
 	"alexandria.app/crypto"
 )
 
+// A User of the wiki. Can create/edit/delete all articles on the wiki.
 type User struct {
 	ID            uint32
 	Admin         bool
@@ -39,6 +40,8 @@ const (
 	argon2Version        = 0x13
 )
 
+// NewUser will create a new User struct and hash the password.
+// Will always use the current hashing parameters (which may change in future).
 func NewUser(email, displayName, password string, admin bool) (*User, error) {
 	salt, err := crypto.GetRandomString(16)
 	if err != nil {
@@ -62,6 +65,7 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 	}, nil
 }
 
+// UserStorage is a presistent database of all users in the system.
 type UserStorage interface {
 	GetUsers() []*User
 	AddUser(*User) error
@@ -79,10 +83,13 @@ type userStorage struct {
 	Users   []*User
 }
 
+// GetUsers returns a slice of all users.
 func (udb *userStorage) GetUsers() []*User {
 	return udb.Users
 }
 
+// GetUser retrieves a user by their email.
+// Performs a simple linear search.
 func (udb *userStorage) GetUser(email string) *User {
 	for _, u := range udb.Users {
 		if strings.EqualFold(u.Email, email) {
@@ -93,6 +100,8 @@ func (udb *userStorage) GetUser(email string) *User {
 	return nil
 }
 
+// GetUserByID retrieves a user by their id.
+// Performs a simple linear search.
 func (udb *userStorage) GetUserByID(id uint32) *User {
 	for _, u := range udb.Users {
 		if u.ID == id {
@@ -103,6 +112,8 @@ func (udb *userStorage) GetUserByID(id uint32) *User {
 	return nil
 }
 
+// AddUser inserts a new user into the database.
+// Note: This doesn't save the database to the file system!
 func (udb *userStorage) AddUser(newUser *User) error {
 	if udb.GetUser(newUser.Email) != nil {
 		return errors.New("User Already Exists")
@@ -118,6 +129,8 @@ func (udb *userStorage) AddUser(newUser *User) error {
 	return nil
 }
 
+// AddUser deletes a user from the database.
+// Note: This doesn't save the database to the file system!
 func (udb *userStorage) DeleteUser(id uint32) {
 	for i, u := range udb.Users {
 		if u.ID == id {
@@ -127,11 +140,15 @@ func (udb *userStorage) DeleteUser(id uint32) {
 	}
 }
 
+// CheckUserLogin checks if the provided email and password match a record in the user database.
+// If the user can't be found or the passwords don't match this will return nil.
 func (udb *userStorage) CheckUserLogin(email, password string) *User {
 	user := udb.GetUser(email)
 	return udb.CheckUserPassword(user, password)
 }
 
+// CheckUserPassword hashes provided password and checks if it matches the user's.
+// If the user is nil or the password doesn't match this will return nil.
 func (udb *userStorage) CheckUserPassword(user *User, password string) *User {
 	if user == nil {
 		return nil
@@ -146,6 +163,9 @@ func (udb *userStorage) CheckUserPassword(user *User, password string) *User {
 	return user
 }
 
+// SetUserPassword hashes the password using the current hashing parameters (which may change in future)
+// and sets the fields on the user struct accordingly.
+// Note: This doesn't save the database to the file system!
 func (udb *userStorage) SetUserPassword(user *User, newPassword string) error {
 	salt, err := crypto.GetRandomString(16)
 	if err != nil {
@@ -165,6 +185,7 @@ func (udb *userStorage) SetUserPassword(user *User, newPassword string) error {
 	return nil
 }
 
+// Save will encode the database and save it to the file system.
 func (udb *userStorage) Save() error {
 	gob.Register(User{})
 	gob.Register(userStorage{})
@@ -180,10 +201,13 @@ func (udb *userStorage) Save() error {
 	return enc.Encode(udb)
 }
 
+// IsEmpty checks if the user database is empty. This should only be the case when initially setting up the system.
 func (udb *userStorage) IsEmpty() bool {
 	return len(udb.Users) == 0
 }
 
+// LoadUserStorage loads the database from the file system or creates a new database if it can't find one at the provided path.
+// Note: This doesn't save the database to the file system when creating it!
 func LoadUserStorage(path string) (UserStorage, error) {
 	_, err := os.Stat(path)
 
