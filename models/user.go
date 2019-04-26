@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/gob"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -15,14 +14,6 @@ import (
 
 	"alexandria.app/crypto"
 )
-
-type JSONUser struct {
-	ID           uint32 `json:"id"`
-	Admin        bool   `json:"admin"`
-	Email        string `json:"email"`
-	DisplayName  string `json:"display_name"`
-	CreationDate int64  `json:"creation_date"`
-}
 
 type User struct {
 	ID            uint32
@@ -69,10 +60,6 @@ func NewUser(email, displayName, password string, admin bool) (*User, error) {
 		Argon2Time:    argon2Time,
 		Argon2Version: argon2Version,
 	}, nil
-}
-
-func (u *User) JSON() ([]byte, error) {
-	return json.Marshal(JSONUser{u.ID, u.Admin, u.Email, u.DisplayName, u.CreationDate})
 }
 
 type UserStorage interface {
