@@ -5,6 +5,7 @@ import (
 	"math/big"
 )
 
+// RandomInt returns a cryptographically secure random integer.
 func RandomInt(max *big.Int) (int, error) {
 	rand, err := rand.Int(rand.Reader, max)
 	if err != nil {
