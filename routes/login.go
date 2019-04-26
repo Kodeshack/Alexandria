@@ -11,6 +11,7 @@ import (
 	"alexandria.app/view"
 )
 
+// LoginRoutes sets up all HTTP routes for user login.
 func LoginRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		v := view.New("layout", "login", config)
