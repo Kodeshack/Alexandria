@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// SetupRoutes creates the HTTP routes required for initial setup.
 func SetupRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.Use(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
