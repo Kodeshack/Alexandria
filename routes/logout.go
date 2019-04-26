@@ -8,6 +8,7 @@ import (
 	"alexandria.app/models"
 )
 
+// LogoutRoutes sets up all HTTP routes for user logout.
 func LogoutRoutes(r *mux.Router, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		session := models.GetRequestSession(r)
