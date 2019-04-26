@@ -13,6 +13,7 @@ import (
 	"alexandria.app/view"
 )
 
+// AdminRoutes sets up all HTTP routes for admin tasks in the wiki.
 func AdminRoutes(r *mux.Router, config *models.Config, userStorage models.UserStorage, sessionStorage *models.SessionStorage) {
 	r.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
 		user := models.GetRequestUser(r)
