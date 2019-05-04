@@ -25,7 +25,9 @@ func TestWriteFile(t *testing.T) {
 	now := time.Now().Unix()
 
 	article := &Article{
-		Path: path,
+		Dir:      path,
+		File:     title + ".md",
+		Category: "",
 		Meta: Metadata{
 			Title:        title,
 			LastEditedAt: now,
@@ -42,7 +44,7 @@ This is just some test text
 		t.Error(err)
 	}
 
-	article, err = LoadArticle(path)
+	article, err = LoadArticle(path, "", title)
 	if err != nil {
 		t.Error(err)
 	}

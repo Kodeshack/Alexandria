@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"time"
 
@@ -25,15 +26,17 @@ type Metadata struct {
 
 // Article contains all the relevant data for displaying an article.
 type Article struct {
-	Path    string
-	Meta    Metadata
-	parsed  bool
-	Content []byte
+	Dir      string
+	File     string
+	Category string
+	Meta     Metadata
+	parsed   bool
+	Content  []byte
 }
 
 // Read the article data from disk and parse the TOML at the beginning of the file.
 func (a *Article) Read() error {
-	data, err := ioutil.ReadFile(a.Path)
+	data, err := ioutil.ReadFile(a.Path())
 	if err != nil {
 		return err
 	}
@@ -65,12 +68,12 @@ func (a *Article) ContentHTML() ([]byte, error) {
 
 // Write the article's content back to disk. Also creates all relevant directories.
 func (a *Article) Write() error {
-	err := os.MkdirAll(filepath.Dir(a.Path), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(a.Dir, a.Category), os.ModePerm)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.OpenFile(a.Path, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	file, err := os.OpenFile(a.Path(), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
@@ -95,16 +98,24 @@ func (a *Article) Write() error {
 	return file.Close()
 }
 
+// Path returns the full path on disk.
+func (a *Article) Path() string {
+	return filepath.Join(a.Dir, a.Category, a.File)
+}
+
 // LoadArticle loads the article (contents) at the specified path from disk.
-func LoadArticle(path string) (*Article, error) {
+func LoadArticle(dir, category, title string) (*Article, error) {
+	path := path.Join(dir, category, title+".md")
 	_, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
 
 	a := Article{
-		Path: path,
-		Meta: Metadata{},
+		Dir:      dir,
+		File:     title + ".md",
+		Category: category,
+		Meta:     Metadata{},
 	}
 
 	err = a.Read()
@@ -117,14 +128,28 @@ func LoadArticle(path string) (*Article, error) {
 
 // NewArticle is a convenience function to create a new Article struct.
 // The article's LastEditedAt field will be set to the current time.
-func NewArticle(title, content, dir string) *Article {
+func NewArticle(category, title, content, dir string) *Article {
 	return &Article{
-		Path:    filepath.Join(dir, title+".md"),
-		Content: []byte(content),
-		parsed:  true,
+		Dir:      dir,
+		File:     title + ".md",
+		Category: category,
+		Content:  []byte(content),
+		parsed:   true,
 		Meta: Metadata{
 			Title:        title,
 			LastEditedAt: time.Now().Unix(),
 		},
 	}
+}
+
+// RemoveArticle will remove the article file at the given path.
+// Note: The full path (including the content path prefix) is expected here.
+func RemoveArticle(path string) error {
+	_, err := os.Stat(path)
+
+	if err != nil {
+		return err
+	}
+
+	return os.Remove(path)
 }
