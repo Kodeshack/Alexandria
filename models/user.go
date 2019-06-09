@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"golang.org/x/crypto/argon2"
-
 	"github.com/google/uuid"
+	"golang.org/x/crypto/argon2"
 
 	"alexandria.app/crypto"
 )
@@ -81,16 +81,27 @@ type userStorage struct {
 	Version int
 	path    string
 	Users   []*User
+	mutex   *sync.RWMutex
 }
 
 // GetUsers returns a slice of all users.
 func (udb *userStorage) GetUsers() []*User {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
 	return udb.Users
 }
 
 // GetUser retrieves a user by their email.
 // Performs a simple linear search.
 func (udb *userStorage) GetUser(email string) *User {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
+
+	return udb.getUser(email)
+}
+
+// NOTE: NOT THREAD SAFE!
+func (udb *userStorage) getUser(email string) *User {
 	for _, u := range udb.Users {
 		if strings.EqualFold(u.Email, email) {
 			return u
@@ -103,6 +114,14 @@ func (udb *userStorage) GetUser(email string) *User {
 // GetUserByID retrieves a user by their id.
 // Performs a simple linear search.
 func (udb *userStorage) GetUserByID(id uint32) *User {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
+
+	return udb.getUserByID(id)
+}
+
+// NOTE: NOT THREAD SAFE!
+func (udb *userStorage) getUserByID(id uint32) *User {
 	for _, u := range udb.Users {
 		if u.ID == id {
 			return u
@@ -115,12 +134,17 @@ func (udb *userStorage) GetUserByID(id uint32) *User {
 // AddUser inserts a new user into the database.
 // Note: This doesn't save the database to the file system!
 func (udb *userStorage) AddUser(newUser *User) error {
-	if udb.GetUser(newUser.Email) != nil {
+	udb.mutex.Lock()
+	defer func() {
+		udb.mutex.Unlock()
+	}()
+
+	if udb.getUser(newUser.Email) != nil {
 		return errors.New("User Already Exists")
 	}
 
 	id := uuid.New().ID()
-	if udb.GetUserByID(id) != nil {
+	if udb.getUserByID(id) != nil {
 		return errors.New("UUID Collision")
 	}
 
@@ -132,6 +156,9 @@ func (udb *userStorage) AddUser(newUser *User) error {
 // AddUser deletes a user from the database.
 // Note: This doesn't save the database to the file system!
 func (udb *userStorage) DeleteUser(id uint32) {
+	udb.mutex.Lock()
+	defer udb.mutex.Unlock()
+
 	for i, u := range udb.Users {
 		if u.ID == id {
 			udb.Users = append(udb.Users[:i], udb.Users[i+1:]...)
@@ -143,6 +170,9 @@ func (udb *userStorage) DeleteUser(id uint32) {
 // CheckUserLogin checks if the provided email and password match a record in the user database.
 // If the user can't be found or the passwords don't match this will return nil.
 func (udb *userStorage) CheckUserLogin(email, password string) *User {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
+
 	user := udb.GetUser(email)
 	return udb.CheckUserPassword(user, password)
 }
@@ -150,6 +180,9 @@ func (udb *userStorage) CheckUserLogin(email, password string) *User {
 // CheckUserPassword hashes provided password and checks if it matches the user's.
 // If the user is nil or the password doesn't match this will return nil.
 func (udb *userStorage) CheckUserPassword(user *User, password string) *User {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
+
 	if user == nil {
 		return nil
 	}
@@ -167,6 +200,9 @@ func (udb *userStorage) CheckUserPassword(user *User, password string) *User {
 // and sets the fields on the user struct accordingly.
 // Note: This doesn't save the database to the file system!
 func (udb *userStorage) SetUserPassword(user *User, newPassword string) error {
+	udb.mutex.Lock()
+	defer udb.mutex.Unlock()
+
 	salt, err := crypto.GetRandomString(16)
 	if err != nil {
 		return err
@@ -187,6 +223,9 @@ func (udb *userStorage) SetUserPassword(user *User, newPassword string) error {
 
 // Save will encode the database and save it to the file system.
 func (udb *userStorage) Save() error {
+	udb.mutex.Lock()
+	defer udb.mutex.Unlock()
+
 	gob.Register(User{})
 	gob.Register(userStorage{})
 
@@ -203,6 +242,9 @@ func (udb *userStorage) Save() error {
 
 // IsEmpty checks if the user database is empty. This should only be the case when initially setting up the system.
 func (udb *userStorage) IsEmpty() bool {
+	udb.mutex.RLock()
+	defer udb.mutex.RUnlock()
+
 	return len(udb.Users) == 0
 }
 
@@ -216,6 +258,7 @@ func LoadUserStorage(path string) (UserStorage, error) {
 			Version: 1,
 			path:    path,
 			Users:   []*User{},
+			mutex:   &sync.RWMutex{},
 		}, nil
 	} else if err != nil {
 		return nil, err
@@ -232,7 +275,7 @@ func LoadUserStorage(path string) (UserStorage, error) {
 
 	dec := gob.NewDecoder(file)
 
-	udb := userStorage{path: path}
+	udb := userStorage{path: path, mutex: &sync.RWMutex{}}
 	err = dec.Decode(&udb)
 	if err != nil {
 		return nil, err
