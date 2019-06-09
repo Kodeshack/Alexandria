@@ -1,15 +1,27 @@
 {{define "content"}}
 <form method="post" action="/articles/save">
     <div class="field">
-        <label for="title">Title</label>
+        <label for="category">Category</label>
         <div class="control">
-            <input class="input" name="title" type="text" />
+            <input class="input" name="category" type="text" {{- if .Data -}} value="{{ .Data.Category | stripContentPathPrefix }}" {{- end -}} />
         </div>
     </div>
 
-    <textarea class="textarea" name="content">{{ if .Data }}{{ .Data.Content }}{{ end }}</textarea>
+    <div class="field">
+        <label for="title">Title</label>
+        <div class="control">
+            <input class="input" name="title" type="text" {{- if .Data -}} value="{{ .Data.Meta.Title }}" {{- end -}} />
+        </div>
+    </div>
+
+    <textarea class="textarea" name="content">{{ if .Data }}{{ .Data.Content | bytesToString }}{{ end }}</textarea>
 
     <br />
+    <input name="old_path" type="hidden" {{- if .Data -}} value="{{ .Data.Path }}" {{- end -}} />
     <input class="button is-primary" type="submit" value="Save" />
+
+    {{if .Data -}}
+    <a class="button is-warning" href="{{ .Config.BaseURL }}/articles/{{ .Data.Category }}/{{ .Data.Meta.Title }}">Cancel</a>
+    {{- end}}
 </form>
 {{end}}

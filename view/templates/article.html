@@ -1,5 +1,7 @@
 {{define "content"}}
 <div class="content">
-    {{.Data}}
+    <h1>{{ .Data.Meta.Title }}</h1>
+    {{ .Data | articleContent }}
+    <a class="button is-primary" href="{{ .Data | articleEditURL }}">Edit</a>
 </div>
 {{end}}
