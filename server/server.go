@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"alexandria.app/articledb"
 	"alexandria.app/models"
 	"alexandria.app/routes"
 	"alexandria.app/view"
@@ -50,7 +51,7 @@ func authedAdminMiddleware(config *models.Config) mux.MiddlewareFunc {
 }
 
 // Start will setup all HTTP routes and start the HTTP server.
-func Start(userStorage models.UserStorage, sessionStorage *models.SessionStorage, config *models.Config) {
+func Start(userStorage models.UserStorage, sessionStorage *models.SessionStorage, articledb articledb.ArticleDB, config *models.Config) {
 	r := mux.NewRouter()
 
 	r.Use(loggingMiddleware)
@@ -77,7 +78,7 @@ func Start(userStorage models.UserStorage, sessionStorage *models.SessionStorage
 	routes.UserRoutes(authedUser, config, userStorage, sessionStorage)
 
 	// Content-related routes.
-	routes.ArticleRoutes(authedUser, config)
+	routes.ArticleRoutes(authedUser, articledb, config)
 
 	// Asset-related routes
 	routes.AssetRoutes(r, config)

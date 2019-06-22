@@ -26,9 +26,9 @@ func IndexRoutes(r *mux.Router, config *models.Config, userStorage models.UserSt
 
 		var category *models.Category
 		if category = models.NewCategory("", config.ContentPath); category != nil {
-			if err := category.ScanEntries(); err != nil {
-				log.Printf("Error while reading root categroy %v", err)
-			}
+			// if err := category.ScanEntries(); err != nil {
+			// 	log.Printf("Error while reading root categroy %v", err)
+			// }
 		}
 
 		v := view.New("layout", "index", config)

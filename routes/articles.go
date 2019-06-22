@@ -4,10 +4,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
+	"alexandria.app/articledb"
 	"alexandria.app/models"
 	"alexandria.app/view"
 
@@ -15,7 +15,7 @@ import (
 )
 
 // ArticleRoutes sets up all HTTP routes for creating/viewing/editing routes and categories.
-func ArticleRoutes(r *mux.Router, config *models.Config) {
+func ArticleRoutes(r *mux.Router, articledb articledb.ArticleDB, config *models.Config) {
 	r.HandleFunc("/articles/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 	}).Methods(http.MethodGet)
@@ -41,12 +41,12 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 		// to remove the offending `\r`s.
 		content = strings.Replace(content, "\r", "", -1)
 
-		dir := filepath.Join(config.ContentPath, filepath.Dir(title))
+		dir := filepath.Dir(title)
 		fileName := filepath.Base(title)
 
 		article := models.NewArticle(fileName, content, dir)
 
-		err := article.Write()
+		err := articledb.Write(article)
 		if err != nil {
 			view.RenderErrorView("Failed to write article file.", http.StatusInternalServerError, config, user, w)
 			return
@@ -65,17 +65,18 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 			return
 		}
 
-		realPath := filepath.Join(config.ContentPath, path)
+		article, category, err := articledb.Load(path)
+		if err != nil {
+			view.RenderErrorView("Failed to read file/dir.", http.StatusInternalServerError, config, user, w)
+			return
+		}
 
-		stat, _ := os.Stat(realPath)
+		if article == nil && category == nil {
+			view.RenderErrorView("", http.StatusNotFound, config, user, w)
+			return
+		}
 
-		if stat != nil && stat.IsDir() {
-			category := models.NewCategory(path, realPath)
-			if err := category.ScanEntries(); err != nil {
-				view.RenderErrorView("Failed to read category directory.", http.StatusInternalServerError, config, user, w)
-				return
-			}
-
+		if category != nil {
 			w.Header().Set("Content-Type", "text/html; charset=utf-8")
 			v := view.New("layout", "category", config)
 			if err := v.Render(w, user, category); err != nil {
@@ -84,12 +85,6 @@ func ArticleRoutes(r *mux.Router, config *models.Config) {
 				return
 			}
 		} else {
-			article, err := models.LoadArticle(realPath + ".md")
-			if err != nil {
-				view.RenderErrorView("", http.StatusNotFound, config, user, w)
-				return
-			}
-
 			body, err := article.ContentHTML()
 			if err != nil {
 				view.RenderErrorView("Failed to render content as HTML.", http.StatusInternalServerError, config, user, w)

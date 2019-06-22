@@ -2,8 +2,6 @@ package models
 
 import (
 	"bytes"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"time"
 
@@ -25,26 +23,22 @@ type Metadata struct {
 
 // Article contains all the relevant data for displaying an article.
 type Article struct {
-	Path    string
-	Meta    Metadata
-	parsed  bool
-	Content []byte
+	Path     string
+	Meta     Metadata
+	parsed   bool
+	Content  []byte
+	Category *Category
 }
 
-// Read the article data from disk and parse the TOML at the beginning of the file.
-func (a *Article) Read() error {
-	data, err := ioutil.ReadFile(a.Path)
-	if err != nil {
-		return err
-	}
+// Parse the article data.
+func (a *Article) Parse(content []byte) error {
+	index := bytes.Index(content, []byte(delimiter))
 
-	index := bytes.Index(data, []byte(delimiter))
+	a.Content = content[index+len(delimiter):]
 
-	a.Content = data[index+len(delimiter):]
+	metadata := content[:index]
 
-	metadata := data[:index]
-
-	err = toml.Unmarshal(metadata, &a.Meta)
+	err := toml.Unmarshal(metadata, &a.Meta)
 
 	if err != nil {
 		return err
@@ -63,56 +57,27 @@ func (a *Article) ContentHTML() ([]byte, error) {
 	return output, nil
 }
 
-// Write the article's content back to disk. Also creates all relevant directories.
-func (a *Article) Write() error {
-	err := os.MkdirAll(filepath.Dir(a.Path), os.ModePerm)
+// Serialize the article's content.
+func (a *Article) Serialize() ([]byte, error) {
+	buffer := bytes.NewBuffer([]byte{})
+	enc := toml.NewEncoder(buffer)
+
+	err := enc.Encode(&a.Meta)
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
-	file, err := os.OpenFile(a.Path, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	_, err = buffer.Write([]byte("\n" + delimiter))
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
-	enc := toml.NewEncoder(file)
-
-	err = enc.Encode(&a.Meta)
+	_, err = buffer.Write(a.Content)
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
-	_, err = file.Write([]byte("\n" + delimiter))
-	if err != nil {
-		return err
-	}
-
-	_, err = file.Write(a.Content)
-	if err != nil {
-		return err
-	}
-
-	return file.Close()
-}
-
-// LoadArticle loads the article (contents) at the specified path from disk.
-func LoadArticle(path string) (*Article, error) {
-	_, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-
-	a := Article{
-		Path: path,
-		Meta: Metadata{},
-	}
-
-	err = a.Read()
-	if err != nil {
-		return nil, err
-	}
-
-	return &a, nil
+	return buffer.Bytes(), nil
 }
 
 // NewArticle is a convenience function to create a new Article struct.
