@@ -1,6 +1,7 @@
 package main
 
 import (
+	"alexandria.app/articledb"
 	"alexandria.app/models"
 	"alexandria.app/server"
 )
@@ -13,7 +14,9 @@ func main() {
 		panic(err)
 	}
 
+	articledb := articledb.New(config.ContentPath)
+
 	sessionStorage := models.NewSessionStorage()
 
-	server.Start(userStorage, sessionStorage, config)
+	server.Start(userStorage, sessionStorage, articledb, config)
 }

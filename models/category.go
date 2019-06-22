@@ -1,7 +1,7 @@
 package models
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -32,12 +32,7 @@ func NewCategory(name, path string) *Category {
 }
 
 // ScanEntries reads the entries of the folder at which the category points.
-func (c *Category) ScanEntries() error {
-	files, err := ioutil.ReadDir(c.Path)
-	if err != nil {
-		return err
-	}
-
+func (c *Category) SetEntries(files []os.FileInfo) error {
 	entries := make([]string, len(files))
 
 	for i, file := range files {
